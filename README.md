@@ -2,9 +2,9 @@
 ShotSync Scorecard
 
 Created by:
-- Michael Opoku
 - Dilan Pais
 - Gavin Marshall
 - Ivory Sarpong
 - Matthew Sotelo
+- Michael Opoku
 - Nathan Ketterlinus
