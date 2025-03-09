@@ -1,5 +1,5 @@
 # COSC412Project
-[PROJECT TITLE HERE]
+ShotSync Scorecard
 
 Created by:
 - Michael Opoku
