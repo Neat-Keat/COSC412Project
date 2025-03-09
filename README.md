@@ -1,5 +1,4 @@
-# COSC412Project
-ShotSync Scorecard
+# ShotSync Scorecard
 
 Created by:
 - Dilan Pais
