@@ -1,0 +1,35 @@
+package com.example.syncshot.data.repository
+
+import com.example.syncshot.data.AppDatabase
+import com.example.syncshot.data.model.Game
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import android.content.Context
+
+class GameRepository(context: Context) {
+
+    private val gameDao = AppDatabase.getDatabase(context).gameDao()
+
+    //These Functions should be called in a VIEWMODEL to update the database!
+
+    fun insertGame(game: Game) {
+        CoroutineScope(Dispatchers.IO).launch {
+            gameDao.insertGame(game)
+        }
+    }
+
+    fun getGame(id: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val game = gameDao.getGameById(id)
+            //Process the retrieved game here
+        }
+    }
+
+    fun updateGame(game: Game) {
+        CoroutineScope(Dispatchers.IO).launch {
+            gameDao.updateGame(game)
+        }
+    }
+
+}
