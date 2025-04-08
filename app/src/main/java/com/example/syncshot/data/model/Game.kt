@@ -13,6 +13,7 @@ data class Game(
     val id: String,         //Unique identifier for each game, kind of like an index for the database
     val location: String,   //Stores the location of where the game took place
     val date: String,       //Stores the date that the game was played
-    val finalScore: Int,    //Stores the final score (this should be calculated from our OCR model!!)
-    val holes: IntArray     //an int array of size 18, which can store stroke info on every hole in a course
+    val names: Array<String>,     //Stores each player's name by index
+    val holes: Array<IntArray>,   //Stores an int array of scores for each player
+    val finalScores: IntArray     //Stores the final scores of each player
 )
