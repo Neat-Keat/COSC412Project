@@ -1,6 +1,7 @@
 package com.example.syncshot.data.model
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -20,4 +21,6 @@ interface GameDao {
     suspend fun updateGame(game: Game)
 
     //TODO: add delete functionality
+    @Delete
+    suspend fun delete(game: Game): Int
 }
