@@ -7,9 +7,6 @@ Created by:
 - Matthew Sotelo
 - Michael Opoku
 - Nathan Ketterlinus
-<br>
-<br>
-<br>
 
 ## Installation Guide
 1. Download and Install Android Studio for you corresponding device at (https://developer.android.com/studio).
