@@ -11,8 +11,7 @@ composeBom = "2024.09.00"
 roomCommon = "2.6.1"
 databindingAdapters = "8.9.0"
 roomKtx = "2.6.1"
-lifecycleViewModelCompose = "2.7.0"
-
+tess-two = "9.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,10 +31,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-room-common = { group = "androidx.room", name = "room-common", version.ref = "roomCommon" }
 androidx-databinding-adapters = { group = "androidx.databinding", name = "databinding-adapters", version.ref = "databindingAdapters" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "roomKtx" }
-androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleViewModelCompose" }
+tess-two = { group = "com.rmtheis", name = "tess-two", version.ref = "tess-two" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
