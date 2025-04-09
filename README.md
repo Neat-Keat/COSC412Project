@@ -10,7 +10,9 @@ Created by:
 
 
 
-## How to Install
+
+
+## Installation Guide
 1. Download and Install Android Studio for you corresponding device at (https://developer.android.com/studio).
 
 2. Once you finish the installation process for Android Studio, unzip the project folder on your computer.
