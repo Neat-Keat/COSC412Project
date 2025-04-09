@@ -1,8 +1,10 @@
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
 }
+
 
 android {
     namespace = "com.example.syncshot"
@@ -39,6 +41,10 @@ android {
     }
 }
 
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -49,7 +55,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.room.common)
     implementation(libs.androidx.databinding.adapters)
     implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
@@ -59,5 +64,14 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
+    implementation(libs.gson)
     implementation(libs.tess.two)
+
+
 }

@@ -1,4 +1,5 @@
 package com.example.syncshot.data.model
+import com.example.syncshot.data.model.Converters
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -7,7 +8,7 @@ import androidx.room.TypeConverters
 
 //This is the custom data type we are using to store info related to every golf game entry
 @Entity(tableName = "games")
-@TypeConverters(androidx.databinding.adapters.Converters::class)
+@TypeConverters(Converters::class)
 data class Game(
     @PrimaryKey
     val id: String,         //Unique identifier for each game, kind of like an index for the database

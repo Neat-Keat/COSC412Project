@@ -4,12 +4,15 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.example.syncshot.data.model.Game
 import com.example.syncshot.data.model.GameDao
+import com.example.syncshot.data.model.Converters
 
 
 //this is the main access point into our database!
 @Database(entities = [Game::class], version = 1)
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao
     companion object {
