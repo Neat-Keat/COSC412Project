@@ -30,26 +30,29 @@ fun GameListScreen(
     var showNewGameDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        floatingActionButton = {
-            FloatingActionButton(onClick = { showNewGameDialog = true }) {
-                Text("+")
-            }
-        },
         bottomBar = {
-            BottomAppBar {
-                IconButton(onClick = { /* TODO: Navigate home */ }) {
-                    Icon(Icons.Default.Home, contentDescription = "Home")
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = { showNewGameDialog = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Add")
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = { /* TODO: Extras */ }) {
-                    Icon(Icons.Default.EmojiEvents, contentDescription = "Extras")
-                }
-                IconButton(onClick = { /* TODO: Settings */ }) {
-                    Icon(Icons.Default.Settings, contentDescription = "Settings")
+            BottomAppBar(
+                containerColor = MaterialTheme.colorScheme.surface
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(onClick = { /* TODO: Navigate home */ }) {
+                        Icon(Icons.Default.Home, contentDescription = "Home")
+                    }
+                    IconButton(onClick = { showNewGameDialog = true }) {
+                        Icon(Icons.Default.Add, contentDescription = "Add")
+                    }
+                    IconButton(onClick = { /* TODO: Extras */ }) {
+                        Icon(Icons.Default.EmojiEvents, contentDescription = "Extras")
+                    }
+                    IconButton(onClick = { /* TODO: Settings */ }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                    }
                 }
             }
         }
@@ -81,6 +84,7 @@ fun GameListScreen(
         }
     }
 }
+
 
 @Composable
 fun GameCard(game: Game, onClick: () -> Unit) {
