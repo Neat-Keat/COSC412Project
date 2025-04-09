@@ -26,6 +26,11 @@ class GameListViewModel(application: Application) : AndroidViewModel(application
         fetchGames()
     }
 
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+
     private fun fetchGames() {
         viewModelScope.launch {
             try {
@@ -37,7 +42,9 @@ class GameListViewModel(application: Application) : AndroidViewModel(application
             }
         }
     }
-
+    fun clearError() {
+        _errorMessage.value = null
+    }
 
     fun addGame(game: Game) {
         viewModelScope.launch {
