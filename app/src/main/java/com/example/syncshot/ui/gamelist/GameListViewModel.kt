@@ -1,6 +1,7 @@
 package com.example.syncshot.ui.gamelist
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.syncshot.data.model.Game
@@ -20,11 +21,23 @@ class GameListViewModel(application: Application) : AndroidViewModel(application
         fetchGames()
     }
 
+    init {
+        Log.d("GameListViewModel", "ViewModel created, fetching games...")
+        fetchGames()
+    }
+
     private fun fetchGames() {
         viewModelScope.launch {
-            _games.value = repository.getAllGames()
+            try {
+                val result = repository.getAllGames()
+                _games.value = result
+                Log.d("GameListViewModel", "Fetched ${result.size} games")
+            } catch (e: Exception) {
+                Log.e("GameListViewModel", "Failed to fetch games", e)
+            }
         }
     }
+
 
     fun addGame(game: Game) {
         viewModelScope.launch {

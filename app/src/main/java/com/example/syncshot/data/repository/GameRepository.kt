@@ -42,4 +42,8 @@ class GameRepository(context: Context) {
             }
         }
     }
+
+    suspend fun getAllGames(): List<Game> {
+        return gameDao.getAllGames()
+    }
 }

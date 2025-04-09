@@ -23,4 +23,7 @@ interface GameDao {
     //TODO: add delete functionality
     @Delete
     suspend fun delete(game: Game): Int
+
+    @Query("SELECT * FROM games")
+    suspend fun getAllGames(): List<Game>
 }
