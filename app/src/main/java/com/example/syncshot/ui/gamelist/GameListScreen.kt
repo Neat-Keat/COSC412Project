@@ -3,18 +3,20 @@ package com.example.syncshot.ui.gamelist
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.syncshot.data.model.Game
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+
 
 
 @Composable
@@ -25,14 +27,15 @@ fun GameListScreen(
     onGameClick: (Game) -> Unit
 ) {
     val gameList by viewModel.games.collectAsState(initial = emptyList())
-    // Show Snackbar for error messages
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             snackbarHostState.showSnackbar(message, duration = SnackbarDuration.Short)
-            viewModel.clearError() // Clear the error after showing
+            viewModel.clearError()
         }
     }
-
     if (gameList.isEmpty()) {
         Text("No games yet — try adding one!", modifier = Modifier.padding(16.dp))
     }
@@ -40,6 +43,7 @@ fun GameListScreen(
     var showNewGameDialog by remember { mutableStateOf(false) }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }, // Add SnackbarHost
         bottomBar = {
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surface

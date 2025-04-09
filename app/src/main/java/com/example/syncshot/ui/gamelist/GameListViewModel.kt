@@ -17,6 +17,7 @@ class GameListViewModel(application: Application) : AndroidViewModel(application
 
     private val repository = GameRepository(application)
 
+
     init {
         fetchGames()
     }
