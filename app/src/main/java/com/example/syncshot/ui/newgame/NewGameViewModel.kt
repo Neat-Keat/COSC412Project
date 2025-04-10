@@ -15,7 +15,10 @@ class NewGameViewModel : ViewModel() {
     var names = mutableStateOf(listOf<String>())
         private set
 
-    var holes = mutableStateOf(emptyList<IntArray>())
+    var par = mutableStateOf(IntArray(18) { 0 })  // assuming 18 holes
+        private set
+
+    var strokes = mutableStateOf(emptyList<IntArray>())
         private set
 
     var finalScores = mutableStateOf(IntArray(0))
@@ -33,6 +36,14 @@ class NewGameViewModel : ViewModel() {
         names.value = newNames
     }
 
+    fun setPar(newPar: IntArray) {
+        par.value = newPar
+    }
+
+    fun setStrokes(newStrokes: List<IntArray>) {
+        strokes.value = newStrokes
+    }
+
     fun setFinalScores(scores: IntArray) {
         finalScores.value = scores
     }
@@ -43,15 +54,16 @@ class NewGameViewModel : ViewModel() {
 
     fun toGame(): Game {
         return Game(
-            id = java.util.UUID.randomUUID().toString(), // generates a unique ID
+            id = java.util.UUID.randomUUID().toString(),
             location = location.value,
             date = date.value,
             names = names.value.toTypedArray(),
-            holes = holes.value.toTypedArray(),
-            finalScores = finalScores.value
+            par = par.value,
+            strokes = strokes.value.toTypedArray()
         )
     }
 
 }
+
 
 
