@@ -15,6 +15,7 @@ lifecycleViewModelCompose = "2.7.0"
 navigation = "2.7.7"
 materialIconsExtended = "1.6.7"
 tess-two = "9.1.0"
+lifecycleViewmodelComposeAndroid = "2.8.7"
 
 
 
@@ -44,6 +45,7 @@ androidx_room_ktx = { group = "androidx.room", name = "room-ktx", version = "2.6
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version = "2.6.1" }
 gson = { group = "com.google.code.gson", name = "gson", version = "2.10.1" }
 tess-two = { group = "com.rmtheis", name = "tess-two", version.ref = "tess-two" }
+androidx-lifecycle-viewmodel-compose-android = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose-android", version.ref = "lifecycleViewmodelComposeAndroid" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

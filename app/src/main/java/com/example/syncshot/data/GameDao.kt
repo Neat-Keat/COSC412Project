@@ -1,4 +1,4 @@
-package com.example.syncshot.data.model
+package com.example.syncshot.data
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.syncshot.data.model.Game
 
 
 //The interface that provides methods for interacting with our database (inserting, querying, updating, deleting)
@@ -20,7 +21,6 @@ interface GameDao {
     @Update
     suspend fun updateGame(game: Game)
 
-    //TODO: add delete functionality
     @Delete
     suspend fun delete(game: Game): Int
 

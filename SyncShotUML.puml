@@ -1,0 +1,48 @@
+@startuml
+class com.example.syncshot.data.model.Converters {
++ String fromIntArray(IntArray)
++ IntArray toIntArray(String)
++ String from2dIntArray(Array<IntArray>)
++ Array<IntArray> to2dIntArray(String)
++ String fromStringArray(Array<String>)
++ Array<String> toStringArray(String)
+}
+
+interface com.example.syncshot.data.GameDao {
++ void insertGame(Game)
++ Game? getGameById(String)
++ void updateGame(Game)
++ Int delete(Game)
+}
+
+class com.example.syncshot.MainActivity {
++ void onCreate(Bundle?)
+}
+
+class com.example.syncshot.data.AppDatabase$Companion {
+- AppDatabase? INSTANCE
++ AppDatabase getDatabase(Context)
+}
+
+
+abstract class com.example.syncshot.data.AppDatabase {
++ GameDao gameDao()
+}
+
+class com.example.syncshot.data.model.Game {
+}
+class com.example.syncshot.data.repository.GameRepository {
+-  gameDao
++ void insertGame(Game)
++ void getGame(String)
++ void updateGame(Game)
++ void deleteGame(Game)
+}
+
+
+
+
+androidx.activity.ComponentActivity <|-- com.example.syncshot.MainActivity
+com.example.syncshot.data.AppDatabase +.. com.example.syncshot.data.AppDatabase$Companion
+androidx.room.RoomDatabase <|-- com.example.syncshot.data.AppDatabase
+@enduml

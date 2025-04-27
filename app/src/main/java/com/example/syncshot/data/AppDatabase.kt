@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.syncshot.data.model.Game
-import com.example.syncshot.data.model.GameDao
+import com.example.syncshot.data.GameDao
 import com.example.syncshot.data.model.Converters
 
 
