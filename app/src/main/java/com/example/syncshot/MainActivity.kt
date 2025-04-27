@@ -19,7 +19,10 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
-
+import com.example.syncshot.ui.gamedetails.GameDetailsScreen
+import com.example.syncshot.ui.nav.Routes
+import com.example.syncshot.ui.newgame.NewGameManualScreen
+import com.example.syncshot.ui.newgame.NewGameScanScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -40,15 +43,47 @@ fun SyncShotApp() {
     val navController = rememberNavController()
     Log.d("SyncShotApp", "Creating NavHost...")
 
-    NavHost(navController, startDestination = "gameList") {
-        composable("gameList") {
+    NavHost(
+        navController,
+        startDestination = Routes.GameList
+    ) {
+        composable(Routes.GameList) {
             GameListScreen(
-                onAddManualGame = { Log.d("GameListScreen", "Add manual game tapped") },
-                onAddScanGame = { Log.d("GameListScreen", "Add scan game tapped") },
-                onGameClick = { game -> Log.d("GameListScreen", "Clicked game ${game.id}") }
+                onAddManualGame = {
+                    Log.d("GameListScreen", "Add manual game tapped")
+                    navController.navigate(Routes.NewGameManual)
+                                  },
+                onAddScanGame = {
+                    Log.d("GameListScreen", "Add scan game tapped")
+                    navController.navigate(Routes.NewGameScan)
+                                },
+                onGameClick = {
+                    game -> navController.navigate("${Routes.GameDetails}/${game.id}") // Navigate to GameDetails, passing the game ID
+                    Log.d("GameListScreen", "Clicked game ${game.id}")
+                }
             )
         }
 
+        //when navController goes to NewGameManual, it calls NewGameManualScreen()
+        composable(Routes.NewGameManual) {
+            NewGameManualScreen()
+        }
+
+        //when navController goes to NewGameScan, it calls NewGameScanScreen()
+        composable(Routes.NewGameScan) {
+            NewGameScanScreen()
+        }
+
+        //must be passed a gameID, then navigates to GameDetailsScreen(gameID)
+        composable(
+            route = "${Routes.GameDetails}/{gameId}",
+            arguments = listOf(navArgument("gameId") { type = NavType.StringType }) // Define the 'gameId' argument
+        ) { backStackEntry ->
+            val gameId = backStackEntry.arguments?.getString("gameId")
+            if (gameId != null) {
+                GameDetailsScreen(gameId = gameId)
+            }
+        }
     }
 }
 
