@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.databinding.adapters)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose.android)
+    implementation(libs.androidx.camera.camera2)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -68,11 +69,19 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material.icons.extended)
+
+    //for Database component
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+
     ksp("androidx.room:room-compiler:2.6.1")
     implementation(libs.gson)
+
+    //for OCR
     implementation(libs.tess.two)
 
-
+    //for using Camera
+    implementation(libs.androidx.camera.core) // Or latest version
+    implementation(libs.androidx.camera.lifecycle) // Or latest version
+    implementation(libs.androidx.camera.view) // Or latest version
 }
