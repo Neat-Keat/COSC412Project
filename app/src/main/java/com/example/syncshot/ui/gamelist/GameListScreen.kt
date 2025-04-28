@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.*
 
 @Composable
 fun GameListScreen(
+    modifier: Modifier = Modifier,
     viewModel: GameListViewModel = viewModel(),
     onAddManualGame: () -> Unit,
     onAddScanGame: () -> Unit,
@@ -45,6 +46,7 @@ fun GameListScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }, // Add SnackbarHost
+
         bottomBar = {
             BottomAppBar(
                 containerColor = MaterialTheme.colorScheme.surface

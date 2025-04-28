@@ -31,7 +31,9 @@ import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
 
 @Composable
-fun NewGameScanScreen() {
+fun NewGameScanScreen(
+    modifier: Modifier = Modifier
+) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 

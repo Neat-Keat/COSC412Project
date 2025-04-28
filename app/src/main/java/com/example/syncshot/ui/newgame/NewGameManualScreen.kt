@@ -10,7 +10,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
 
 @Composable
-fun NewGameManualScreen() {
+fun NewGameManualScreen(
+    modifier: Modifier = Modifier
+) {
     Scaffold(modifier = Modifier.padding(16.dp)){
         Text(text = "New Game Manual", modifier = Modifier.padding(it), style = MaterialTheme.typography.headlineSmall)
     }

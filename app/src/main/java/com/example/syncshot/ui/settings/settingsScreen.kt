@@ -22,7 +22,10 @@ import androidx.compose.ui.unit.dp
 import com.example.syncshot.ui.theme.ThemeViewModel
 
 @Composable
-fun SettingsScreen(themeViewModel: ThemeViewModel) {
+fun SettingsScreen(
+    themeViewModel: ThemeViewModel,
+    modifier: Modifier = Modifier
+) {
     val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 
     Column(

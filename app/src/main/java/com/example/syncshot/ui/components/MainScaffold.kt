@@ -15,16 +15,24 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.syncshot.ui.gamelist.NewGameDialog
+import com.example.syncshot.ui.nav.Routes
 
 @Composable
 fun MainScaffold(
-    onAddClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    content: @Composable (Modifier) -> Unit // This will receive the screen content
+    navController: NavHostController,
+    content: @Composable (Modifier) -> Unit
 ) {
+    var showNewGameDialog by remember { mutableStateOf(false) }
+
     Scaffold(
         bottomBar = {
             BottomAppBar(
@@ -40,19 +48,33 @@ fun MainScaffold(
                     IconButton(onClick = { /* TODO: Navigate home */ }) {
                         Icon(Icons.Default.Home, contentDescription = "Home")
                     }
-                    IconButton(onClick = onAddClick) {
+                    IconButton(onClick = { showNewGameDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add")
                     }
                     IconButton(onClick = { /* TODO: Extras */ }) {
                         Icon(Icons.Default.EmojiEvents, contentDescription = "Extras")
                     }
-                    IconButton(onClick = onSettingsClick) {
+                    IconButton(onClick = { navController.navigate(Routes.Settings) }) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }
             }
         }
     ) { padding ->
-        content(Modifier.padding(padding)) // Pass the padding to the content
+        content(Modifier.padding(padding))
+    }
+
+    if (showNewGameDialog) {
+        NewGameDialog(
+            onDismiss = { showNewGameDialog = false },
+            onManualClick = {
+                showNewGameDialog = false
+                navController.navigate(Routes.NewGameManual)
+            },
+            onScanClick = {
+                showNewGameDialog = false
+                navController.navigate(Routes.NewGameScan)
+            }
+        )
     }
 }

@@ -9,8 +9,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.padding
 
 @Composable
-fun GameDetailsScreen(gameId: String) {
-    Scaffold(modifier = Modifier.padding(16.dp)){
+fun GameDetailsScreen(
+    gameId: String,
+    modifier: Modifier = Modifier
+) {
+    Scaffold(
+        modifier = Modifier.padding(16.dp)){
         Text(text = "Game Details $gameId", modifier = Modifier.padding(it), style = MaterialTheme.typography.headlineSmall)
     }
     // TODO: Add your UI to display game details here
