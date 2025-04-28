@@ -16,6 +16,7 @@ fun GameDetailsScreen(
     Scaffold(
         modifier = Modifier.padding(16.dp)){
         Text(text = "Game Details $gameId", modifier = Modifier.padding(it), style = MaterialTheme.typography.headlineSmall)
+        // TODO: Add your UI to display game details here
     }
-    // TODO: Add your UI to display game details here
+
 }

@@ -50,18 +50,9 @@ fun SyncShotApp(themeViewModel: ThemeViewModel) {
             MainScaffold(navController = navController){ mainScaffoldModifier ->
                 GameListScreen(
                     modifier = mainScaffoldModifier, // Pass the padding modifier
-                    onAddManualGame = {
-                        navController.navigate(Routes.NewGameManual)
-                    },
-                    onAddScanGame = {
-                        navController.navigate(Routes.NewGameScan)
-                    },
                     onGameClick = { game ->
                         navController.navigate("${Routes.GameDetails}/${game.id}")
                     },
-                    onSettingsClick = {
-                        navController.navigate(Routes.Settings)
-                    }
                 )
             }
         }

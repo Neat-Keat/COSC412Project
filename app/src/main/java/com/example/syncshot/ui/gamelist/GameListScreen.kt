@@ -13,20 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.syncshot.data.model.Game
-import androidx.compose.ui.window.Dialog
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-
-
 
 @Composable
 fun GameListScreen(
     modifier: Modifier = Modifier,
     viewModel: GameListViewModel = viewModel(),
-    onAddManualGame: () -> Unit,
-    onAddScanGame: () -> Unit,
     onGameClick: (Game) -> Unit,
-    onSettingsClick: () -> Unit
 ) {
     val gameList by viewModel.games.collectAsState(initial = emptyList())
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -38,70 +30,28 @@ fun GameListScreen(
             viewModel.clearError()
         }
     }
-    if (gameList.isEmpty()) {
-        Text("No games yet — try adding one!", modifier = Modifier.padding(16.dp))
-    }
 
-    var showNewGameDialog by remember { mutableStateOf(false) }
+    SnackbarHost(snackbarHostState)
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }, // Add SnackbarHost
-
-        bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.surface
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { /* TODO: Navigate home */ }) {
-                        Icon(Icons.Default.Home, contentDescription = "Home")
-                    }
-                    IconButton(onClick = { showNewGameDialog = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Add")
-                    }
-                    IconButton(onClick = { /* TODO: Extras */ }) {
-                        Icon(Icons.Default.EmojiEvents, contentDescription = "Extras")
-                    }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
-                    }
-                }
-            }
+    Column(modifier = modifier.fillMaxSize()) {
+        if (gameList.isEmpty()) {
+            Text("No games yet — try adding one!", modifier = Modifier.padding(16.dp))
         }
-    ) { padding ->
+
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            contentPadding = padding,
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxSize()
         ) {
             items(gameList) { game ->
                 GameCard(game = game, onClick = { onGameClick(game) })
             }
         }
-
-        if (showNewGameDialog) {
-            NewGameDialog(
-                onDismiss = { showNewGameDialog = false },
-                onManualClick = {
-                    showNewGameDialog = false
-                    onAddManualGame()
-                },
-                onScanClick = {
-                    showNewGameDialog = false
-                    onAddScanGame()
-                }
-            )
-        }
     }
 }
-
 
 @Composable
 fun GameCard(game: Game, onClick: () -> Unit) {
@@ -116,47 +66,3 @@ fun GameCard(game: Game, onClick: () -> Unit) {
         }
     }
 }
-
-@Composable
-fun NewGameDialog(onDismiss: () -> Unit, onManualClick: () -> Unit, onScanClick: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            tonalElevation = 8.dp
-        ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Text("New Game?", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onScanClick, modifier = Modifier.fillMaxWidth()) {
-                    Text("Automatic Scan")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = onManualClick, modifier = Modifier.fillMaxWidth()) {
-                    Text("Input Manually")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ExtrasDialog(onDismiss: () -> Unit, onAchievementsClick: () -> Unit, onAcknowledgementsClick: () -> Unit) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            tonalElevation = 8.dp
-        ) {
-            Column(modifier = Modifier.padding(24.dp)) {
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onAchievementsClick, modifier = Modifier.fillMaxWidth()) {
-                    Text("Achievements")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(onClick = onAcknowledgementsClick, modifier = Modifier.fillMaxWidth()) {
-                    Text("Acknowledgements")
-                }
-            }
-        }
-    }
-}
-

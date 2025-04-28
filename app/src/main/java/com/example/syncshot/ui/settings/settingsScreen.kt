@@ -45,7 +45,6 @@ fun SettingsScreen(
             IconButton(
                 onClick = {
                     // Toggle the theme when the button is clicked
-                    //TODO: logic is written, just need to actually apply it properly
                     themeViewModel.toggleTheme()
                 }
             ) { // Toggle theme here
