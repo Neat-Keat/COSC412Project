@@ -1,5 +1,6 @@
 package com.example.syncshot.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,14 +19,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.syncshot.ui.theme.ThemeViewModel
 
 @Composable
-fun SettingsScreen(themeViewModel: ThemeViewModel = viewModel()) {
+fun SettingsScreen(themeViewModel: ThemeViewModel) {
     val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 
-    //toggle app between light and dark mode
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -33,10 +32,12 @@ fun SettingsScreen(themeViewModel: ThemeViewModel = viewModel()) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+
+        //toggle app between light and dark mode
         Row(
-            modifier = Modifier.
-                fillMaxWidth().
-                padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ){
             IconButton(
                 onClick = {
@@ -56,19 +57,22 @@ fun SettingsScreen(themeViewModel: ThemeViewModel = viewModel()) {
                 text = "Toggle Theme"
             )
         }
+
+
         Row(
-            modifier = Modifier.
-            fillMaxWidth().
-            padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ){
             //TODO: other settings stuff
             Text("this is a placeholder")
         }
 
+
         Row(
-            modifier = Modifier.
-            fillMaxWidth().
-            padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
             //TODO: even more settings stuff here
             Text("this is a placeholder")

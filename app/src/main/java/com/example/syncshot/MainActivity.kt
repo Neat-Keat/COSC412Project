@@ -1,29 +1,23 @@
 package com.example.syncshot
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.compose.*
 import com.example.syncshot.ui.gamelist.GameListScreen
-import com.example.syncshot.ui.newgame.NewGameScreen
 import com.example.syncshot.ui.theme.SyncShotTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.padding
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.syncshot.ui.gamedetails.GameDetailsScreen
 import com.example.syncshot.ui.nav.Routes
 import com.example.syncshot.ui.newgame.NewGameManualScreen
 import com.example.syncshot.ui.newgame.NewGameScanScreen
 import com.example.syncshot.ui.settings.SettingsScreen
+import com.example.syncshot.ui.theme.ThemeViewModel
 
 
 class MainActivity : ComponentActivity() {
@@ -31,16 +25,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SyncShotTheme {
+
+            // Create ThemeViewModel here, for passing current app theme from settings
+            val themeViewModel: ThemeViewModel = viewModel()
+
+            SyncShotTheme(themeViewModel){
                 Log.d("SyncShotApp", "SyncShotApp launched") // add this log
-                SyncShotApp()
+                SyncShotApp(themeViewModel = themeViewModel)
             }
         }
     }
 }
 
 @Composable
-fun SyncShotApp() {
+fun SyncShotApp(themeViewModel: ThemeViewModel) {
     val navController = rememberNavController()
     Log.d("SyncShotApp", "Creating NavHost...")
 
@@ -95,7 +93,7 @@ fun SyncShotApp() {
         }
 
         composable(Routes.Settings) {
-            SettingsScreen()
+            SettingsScreen(themeViewModel)
         }
     }
 }

@@ -42,7 +42,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun SyncShotTheme(
-    themeViewModel: ThemeViewModel = viewModel(),
+    themeViewModel: ThemeViewModel,
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
