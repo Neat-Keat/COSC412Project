@@ -6,14 +6,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import androidx.navigation.compose.*
 import com.example.syncshot.ui.gamelist.GameListScreen
 import com.example.syncshot.ui.theme.SyncShotTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.syncshot.ui.achievements.AchievementsScreen
+import com.example.syncshot.ui.acknowledgements.AcknowledgementsScreen
 import com.example.syncshot.ui.components.MainScaffold
 import com.example.syncshot.ui.gamedetails.GameDetailsScreen
 import com.example.syncshot.ui.nav.Routes
@@ -21,8 +19,6 @@ import com.example.syncshot.ui.newgame.NewGameManualScreen
 import com.example.syncshot.ui.newgame.NewGameScanScreen
 import com.example.syncshot.ui.settings.SettingsScreen
 import com.example.syncshot.ui.theme.ThemeViewModel
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,6 +88,18 @@ fun SyncShotApp(themeViewModel: ThemeViewModel) {
         composable(Routes.Settings) {
             MainScaffold(navController = navController){ mainScaffoldModifier ->
                 SettingsScreen(themeViewModel, modifier = mainScaffoldModifier)
+            }
+        }
+
+        composable(Routes.Achievements) {
+            MainScaffold(navController = navController){ mainScaffoldModifier ->
+                AchievementsScreen(themeViewModel, modifier = mainScaffoldModifier)
+            }
+        }
+
+        composable(Routes.Acknowledgements) {
+            MainScaffold(navController = navController){ mainScaffoldModifier ->
+                AcknowledgementsScreen(themeViewModel, modifier = mainScaffoldModifier)
             }
         }
     }

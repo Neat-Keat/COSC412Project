@@ -23,15 +23,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.syncshot.ui.gamelist.ExtrasDialog
 import com.example.syncshot.ui.gamelist.NewGameDialog
 import com.example.syncshot.ui.nav.Routes
 
+// This composable is the bottom navigation bar that lets the user go home, create a new game, and go to settings
 @Composable
 fun MainScaffold(
     navController: NavHostController,
     content: @Composable (Modifier) -> Unit
 ) {
     var showNewGameDialog by remember { mutableStateOf(false) }
+    var showExtrasDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         bottomBar = {
@@ -51,7 +54,7 @@ fun MainScaffold(
                     IconButton(onClick = { showNewGameDialog = true }) {
                         Icon(Icons.Default.Add, contentDescription = "Add")
                     }
-                    IconButton(onClick = { /* TODO: Extras */ }) {
+                    IconButton(onClick = { showExtrasDialog = true/* TODO: Extras */ }) {
                         Icon(Icons.Default.EmojiEvents, contentDescription = "Extras")
                     }
                     IconButton(onClick = { navController.navigate(Routes.Settings) }) {
@@ -64,6 +67,7 @@ fun MainScaffold(
         content(Modifier.padding(padding))
     }
 
+    //opens popup to choose between scanning a new game and entering a new game manually
     if (showNewGameDialog) {
         NewGameDialog(
             onDismiss = { showNewGameDialog = false },
@@ -74,6 +78,21 @@ fun MainScaffold(
             onScanClick = {
                 showNewGameDialog = false
                 navController.navigate(Routes.NewGameScan)
+            }
+        )
+    }
+
+    //opens popup to navigate to achievements or acknowledgements
+    if (showExtrasDialog) {
+        ExtrasDialog(
+            onDismiss = { showNewGameDialog = false },
+            onAchievementsClick = {
+                showExtrasDialog = false
+                navController.navigate(Routes.Achievements)
+            },
+            onAcknowledgementsClick = {
+                showExtrasDialog = false
+                navController.navigate(Routes.Acknowledgements)
             }
         )
     }

@@ -6,4 +6,6 @@ object Routes {
     const val NewGameScan = "newGameScan"
     const val GameDetails = "gameDetails" //will need an argument for game ID
     const val Settings = "settings"
+    const val Achievements = "achievements"
+    const val Acknowledgements = "acknowledgements"
 }

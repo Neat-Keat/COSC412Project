@@ -139,3 +139,24 @@ fun NewGameDialog(onDismiss: () -> Unit, onManualClick: () -> Unit, onScanClick:
     }
 }
 
+@Composable
+fun ExtrasDialog(onDismiss: () -> Unit, onAchievementsClick: () -> Unit, onAcknowledgementsClick: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            tonalElevation = 8.dp
+        ) {
+            Column(modifier = Modifier.padding(24.dp)) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onAchievementsClick, modifier = Modifier.fillMaxWidth()) {
+                    Text("Achievements")
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(onClick = onAcknowledgementsClick, modifier = Modifier.fillMaxWidth()) {
+                    Text("Acknowledgements")
+                }
+            }
+        }
+    }
+}
+
