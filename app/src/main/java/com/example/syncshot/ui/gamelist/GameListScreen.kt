@@ -24,7 +24,8 @@ fun GameListScreen(
     viewModel: GameListViewModel = viewModel(),
     onAddManualGame: () -> Unit,
     onAddScanGame: () -> Unit,
-    onGameClick: (Game) -> Unit
+    onGameClick: (Game) -> Unit,
+    onSettingsClick: () -> Unit
 ) {
     val gameList by viewModel.games.collectAsState(initial = emptyList())
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -64,7 +65,7 @@ fun GameListScreen(
                     IconButton(onClick = { /* TODO: Extras */ }) {
                         Icon(Icons.Default.EmojiEvents, contentDescription = "Extras")
                     }
-                    IconButton(onClick = { /* TODO: Settings */ }) {
+                    IconButton(onClick = onSettingsClick) {
                         Icon(Icons.Default.Settings, contentDescription = "Settings")
                     }
                 }

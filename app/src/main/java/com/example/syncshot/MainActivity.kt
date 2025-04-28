@@ -23,6 +23,7 @@ import com.example.syncshot.ui.gamedetails.GameDetailsScreen
 import com.example.syncshot.ui.nav.Routes
 import com.example.syncshot.ui.newgame.NewGameManualScreen
 import com.example.syncshot.ui.newgame.NewGameScanScreen
+import com.example.syncshot.ui.settings.SettingsScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -49,17 +50,25 @@ fun SyncShotApp() {
     ) {
         composable(Routes.GameList) {
             GameListScreen(
+
                 onAddManualGame = {
                     Log.d("GameListScreen", "Add manual game tapped")
                     navController.navigate(Routes.NewGameManual)
                                   },
+
                 onAddScanGame = {
                     Log.d("GameListScreen", "Add scan game tapped")
                     navController.navigate(Routes.NewGameScan)
                                 },
+
                 onGameClick = {
                     game -> navController.navigate("${Routes.GameDetails}/${game.id}") // Navigate to GameDetails, passing the game ID
                     Log.d("GameListScreen", "Clicked game ${game.id}")
+                },
+
+                onSettingsClick = {
+                    navController.navigate(Routes.Settings)
+                    Log.d("GameListScreen", "Settings Clicked")
                 }
             )
         }
@@ -83,6 +92,10 @@ fun SyncShotApp() {
             if (gameId != null) {
                 GameDetailsScreen(gameId = gameId)
             }
+        }
+
+        composable(Routes.Settings) {
+            SettingsScreen()
         }
     }
 }

@@ -5,4 +5,5 @@ object Routes {
     const val NewGameManual = "newGameManual"
     const val NewGameScan = "newGameScan"
     const val GameDetails = "gameDetails" //will need an argument for game ID
+    const val Settings = "settings"
 }
