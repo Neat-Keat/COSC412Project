@@ -1,5 +1,5 @@
 //NewGameScanScreen.kt
-package com.example.syncshot.ui.newgame
+package com.example.syncshot.ui.newgamescan
 
 import android.Manifest
 import android.content.pm.PackageManager

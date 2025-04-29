@@ -1,69 +1,73 @@
 package com.example.syncshot.ui.newgame
 
-import androidx.compose.runtime.mutableStateOf
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.syncshot.data.model.Game
+import com.example.syncshot.data.repository.GameRepository
+import kotlinx.coroutines.launch
+import java.util.UUID
 
-class NewGameViewModel : ViewModel() {
+class NewGameViewModel(context: Context) : ViewModel() {
 
-    var location = mutableStateOf("")
-        private set
+    private val repository = GameRepository(context)
 
-    var date = mutableStateOf("")
-        private set
+    // State variables for the game setup
+    var numberOfPlayers = 2
+    var gameDate: String? = null
+    var gameLocation: String? = null
 
-    var names = mutableStateOf(listOf<String>())
-        private set
+    // State variables for game scores
+    var playerNames = Array(numberOfPlayers){"Player ${it+1}"}
+    var strokes: Array<IntArray> = Array(numberOfPlayers) { IntArray(18) { 0 } }
+    var par: IntArray = IntArray(18) { 4 }
 
-    var par = mutableStateOf(IntArray(18) { 0 })  // assuming 18 holes
-        private set
-
-    var strokes = mutableStateOf(emptyList<IntArray>())
-        private set
-
-    var finalScores = mutableStateOf(IntArray(0))
-        private set
-
-    fun setLocation(newLocation: String) {
-        location.value = newLocation
+    // Function to update the number of players
+    fun updateNumberOfPlayers(numPlayers: Int) {
+        numberOfPlayers = numPlayers
+        playerNames = Array(numberOfPlayers){"Player ${it+1}"}
+        strokes = Array(numberOfPlayers) { IntArray(18) { 0 } }
     }
 
-    fun setDate(newDate: String) {
-        date.value = newDate
+    // Function to update the game date
+    fun updateGameDate(date: String?) {
+        gameDate = date
     }
 
-    fun setNames(newNames: List<String>) {
-        names.value = newNames
+    // Function to update the game location
+    fun updateGameLocation(location: String?) {
+        gameLocation = location
+    }
+    fun updatePar(index: Int, newPar: Int){
+        par[index] = newPar
     }
 
-    fun setPar(newPar: IntArray) {
-        par.value = newPar
+    fun updateStrokes(playerIndex: Int, holeIndex: Int, newStrokes: Int) {
+        strokes[playerIndex][holeIndex] = newStrokes
     }
-
-    fun setStrokes(newStrokes: List<IntArray>) {
-        strokes.value = newStrokes
+    fun updatePlayerName(index: Int, newName: String){
+        playerNames[index] = newName
     }
-
-    fun setFinalScores(scores: IntArray) {
-        finalScores.value = scores
+    fun insertGame() {
+        viewModelScope.launch {
+            val newGame = Game(
+                id = UUID.randomUUID().toString(), // Generate a unique ID
+                names = playerNames,
+                strokes = strokes,
+                par = par,
+                date = gameDate,
+                location = gameLocation
+            )
+            repository.insertGame(newGame)
+        }
     }
-
-    fun validate(): Boolean {
-        return location.value.isNotBlank() && date.value.isNotBlank()
-    }
-
-    fun toGame(): Game {
-        return Game(
-            id = java.util.UUID.randomUUID().toString(),
-            location = location.value,
-            date = date.value,
-            names = names.value.toTypedArray(),
-            par = par.value,
-            strokes = strokes.value.toTypedArray()
-        )
-    }
-
 }
 
+class GameListViewModel(context: Context): ViewModel(){
+    private val repository = GameRepository(context)
+    suspend fun getAllGames(): List<Game> {
+        return repository.getAllGames()
+    }
+}
 
 

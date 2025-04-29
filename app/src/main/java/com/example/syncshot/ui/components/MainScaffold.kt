@@ -54,7 +54,7 @@ fun MainScaffold(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { /* TODO: Navigate home */ }) {
+                    IconButton(onClick = { navController.navigate(Routes.GameList)  }) {
                         Icon(Icons.Default.Home, contentDescription = "Home")
                     }
                     IconButton(onClick = { showNewGameDialog = true }) {
@@ -79,7 +79,7 @@ fun MainScaffold(
             onDismiss = { showNewGameDialog = false },
             onManualClick = {
                 showNewGameDialog = false
-                navController.navigate(Routes.NewGameManual)
+                navController.navigate(Routes.NewGameSetup)
             },
             onScanClick = {
                 showNewGameDialog = false

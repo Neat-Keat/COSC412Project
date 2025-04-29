@@ -15,8 +15,9 @@ import com.example.syncshot.ui.acknowledgements.AcknowledgementsScreen
 import com.example.syncshot.ui.components.MainScaffold
 import com.example.syncshot.ui.gamedetails.GameDetailsScreen
 import com.example.syncshot.ui.nav.Routes
-import com.example.syncshot.ui.newgame.NewGameManualScreen
-import com.example.syncshot.ui.newgame.NewGameScanScreen
+import com.example.syncshot.ui.newgamescores.NewGameScoresScreen
+import com.example.syncshot.ui.newgamesetup.NewGameSetupScreen
+import com.example.syncshot.ui.newgamescan.NewGameScanScreen
 import com.example.syncshot.ui.settings.SettingsScreen
 import com.example.syncshot.ui.theme.ThemeViewModel
 
@@ -56,11 +57,18 @@ fun SyncShotApp(themeViewModel: ThemeViewModel) {
                 )
             }
         }
-        composable(Routes.NewGameManual) {
+        composable(Routes.NewGameSetup) {
             MainScaffold(navController = navController){ mainScaffoldModifier ->
-                NewGameManualScreen(modifier = mainScaffoldModifier)
+                NewGameSetupScreen(modifier = mainScaffoldModifier, navController = navController)
             }
         }
+
+        composable(Routes.NewGameScores) {
+            MainScaffold(navController = navController) { mainScaffoldModifier ->
+                NewGameScoresScreen(modifier = mainScaffoldModifier, navController = navController)
+            }
+        }
+
         composable(Routes.NewGameScan) {
             MainScaffold(navController = navController){ mainScaffoldModifier ->
                 NewGameScanScreen(modifier = mainScaffoldModifier)
