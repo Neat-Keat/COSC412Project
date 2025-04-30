@@ -19,11 +19,8 @@ class GameRepository(context: Context) {
         }
     }
 
-    fun getGame(id: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val game = gameDao.getGameById(id)
-            //Process the retrieved game here
-        }
+    suspend fun getGame(id: String): Game? {
+        return gameDao.getGameById(id)
     }
 
     fun updateGame(game: Game) {
