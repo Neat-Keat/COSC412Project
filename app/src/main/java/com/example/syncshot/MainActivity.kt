@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.*
 import com.example.syncshot.ui.gamelist.GameListScreen
 import com.example.syncshot.ui.theme.SyncShotTheme
@@ -14,6 +15,8 @@ import com.example.syncshot.ui.achievements.AchievementsScreen
 import com.example.syncshot.ui.acknowledgements.AcknowledgementsScreen
 import com.example.syncshot.ui.components.MainScaffold
 import com.example.syncshot.ui.gamedetails.GameDetailsScreen
+import com.example.syncshot.ui.gamedetails.GameDetailsViewModel
+import com.example.syncshot.ui.gamedetails.GameDetailsViewModelFactory
 import com.example.syncshot.ui.nav.Routes
 import com.example.syncshot.ui.newgamescores.NewGameScoresScreen
 import com.example.syncshot.ui.newgamesetup.NewGameSetupScreen
@@ -32,14 +35,14 @@ class MainActivity : ComponentActivity() {
 
             SyncShotTheme(themeViewModel){
                 Log.d("SyncShotApp", "SyncShotApp launched") // add this log
-                SyncShotApp(themeViewModel = themeViewModel)
+                SyncShotApp(themeViewModel = themeViewModel, context = this)
             }
         }
     }
 }
 
 @Composable
-fun SyncShotApp(themeViewModel: ThemeViewModel) {
+fun SyncShotApp(themeViewModel: ThemeViewModel, context: MainActivity) {
     val navController = rememberNavController()
     Log.d("SyncShotApp", "Creating NavHost...")
 
@@ -74,16 +77,25 @@ fun SyncShotApp(themeViewModel: ThemeViewModel) {
                 NewGameScanScreen(modifier = mainScaffoldModifier)
             }
         }
+
         composable(
             route = "${Routes.GameDetails}/{gameId}",
         ) { backStackEntry ->
             val gameId = backStackEntry.arguments?.getString("gameId")
             if (gameId != null) {
-                MainScaffold(navController = navController){ mainScaffoldModifier ->
-                    GameDetailsScreen(gameId = gameId, modifier = mainScaffoldModifier)
-                }
+                val gameDetailsViewModel: GameDetailsViewModel = viewModel(
+                    factory = GameDetailsViewModelFactory(
+                        context = context, // Correctly passing the context from outside
+                        gameId = gameId
+                    )
+                )
+                GameDetailsScreen(
+                    game = gameDetailsViewModel.game,
+                    modifier = Modifier // Apply the modifier here
+                )
             }
         }
+
         composable(Routes.Settings) {
             MainScaffold(navController = navController){ mainScaffoldModifier ->
                 SettingsScreen(themeViewModel, modifier = mainScaffoldModifier)
