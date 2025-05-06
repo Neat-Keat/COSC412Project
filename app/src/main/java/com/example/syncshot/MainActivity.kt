@@ -7,7 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.*
+import androidx.navigation.navArgument
 import com.example.syncshot.ui.gamelist.GameListScreen
 import com.example.syncshot.ui.theme.SyncShotTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,9 +68,26 @@ fun SyncShotApp(themeViewModel: ThemeViewModel, context: MainActivity) {
             }
         }
 
-        composable(Routes.NewGameScores) {
+        composable(
+            route = Routes.NewGameScores,
+            arguments = listOf(
+                navArgument("numPlayers") { type = NavType.IntType },
+                navArgument("date") { type = NavType.StringType },
+                navArgument("location") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val numPlayers = backStackEntry.arguments?.getInt("numPlayers") ?: 0
+            val date = backStackEntry.arguments?.getString("date") ?: ""
+            val location = backStackEntry.arguments?.getString("location") ?: ""
+
             MainScaffold(navController = navController) { mainScaffoldModifier ->
-                NewGameScoresScreen(modifier = mainScaffoldModifier, navController = navController)
+                NewGameScoresScreen(
+                    modifier = mainScaffoldModifier,
+                    navController = navController,
+                    numPlayers = numPlayers,
+                    date = date,
+                    location = location
+                )
             }
         }
 

@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.syncshot.ui.newgame.NewGameSetupViewModel
 import com.example.syncshot.ui.newgame.NewGameViewModel
+import com.example.syncshot.ui.nav.Routes
 import com.example.syncshot.ui.newgamescores.NewGameViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,7 +85,11 @@ fun NewGameSetupScreen(
 
         // Next Button
         Button(
-            onClick = { navController.navigate("newGameScores") },
+            onClick = {
+                val numPlayers = numberOfPlayersText.toIntOrNull() ?: 0
+                // Use the helper function from Routes to build the route string
+                navController.navigate(Routes.newGameScoresRoute(numPlayers, gameDateText, gameLocationText))
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Next")
