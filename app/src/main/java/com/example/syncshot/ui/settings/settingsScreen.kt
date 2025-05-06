@@ -1,6 +1,5 @@
 package com.example.syncshot.ui.settings
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,8 +22,7 @@ import com.example.syncshot.ui.theme.ThemeViewModel
 
 @Composable
 fun SettingsScreen(
-    themeViewModel: ThemeViewModel,
-    modifier: Modifier = Modifier
+    themeViewModel: ThemeViewModel
 ) {
     val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 
@@ -61,23 +59,23 @@ fun SettingsScreen(
         }
 
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ){
-            //TODO: other settings stuff
-            Text("this is a placeholder")
-        }
-
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            //TODO: even more settings stuff here
-            Text("this is a placeholder")
-        }
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(16.dp)
+//        ){
+//            //TODO: other settings stuff
+//            Text("this is a placeholder")
+//        }
+//
+//
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(16.dp)
+//        ) {
+//            //TODO: even more settings stuff here
+//            Text("this is a placeholder")
+//        }
     }
 }

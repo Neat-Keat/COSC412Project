@@ -1,4 +1,4 @@
-package com.example.syncshot.ui.newgame
+package com.example.syncshot.ui.newgame // <--- CORRECT PACKAGE
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
@@ -18,14 +18,14 @@ class NewGameViewModel(context: Context) : ViewModel() {
     var gameLocation: String? = null
 
     // State variables for game scores
-    var playerNames = Array(numberOfPlayers){"Player ${it+1}"}
+    var playerNames = Array(numberOfPlayers) { "Player ${it + 1}" }
     var strokes: Array<IntArray> = Array(numberOfPlayers) { IntArray(18) { 0 } }
     var par: IntArray = IntArray(18) { 4 }
 
     // Function to update the number of players
     fun updateNumberOfPlayers(numPlayers: Int) {
         numberOfPlayers = numPlayers
-        playerNames = Array(numberOfPlayers){"Player ${it+1}"}
+        playerNames = Array(numberOfPlayers) { "Player ${it + 1}" }
         strokes = Array(numberOfPlayers) { IntArray(18) { 0 } }
     }
 
@@ -38,16 +38,19 @@ class NewGameViewModel(context: Context) : ViewModel() {
     fun updateGameLocation(location: String?) {
         gameLocation = location
     }
-    fun updatePar(index: Int, newPar: Int){
+
+    fun updatePar(index: Int, newPar: Int) {
         par[index] = newPar
     }
 
     fun updateStrokes(playerIndex: Int, holeIndex: Int, newStrokes: Int) {
         strokes[playerIndex][holeIndex] = newStrokes
     }
-    fun updatePlayerName(index: Int, newName: String){
+
+    fun updatePlayerName(index: Int, newName: String) {
         playerNames[index] = newName
     }
+
     fun insertGame() {
         viewModelScope.launch {
             val newGame = Game(
@@ -63,11 +66,9 @@ class NewGameViewModel(context: Context) : ViewModel() {
     }
 }
 
-class GameListViewModel(context: Context): ViewModel(){
+class GameListViewModel(context: Context) : ViewModel() {
     private val repository = GameRepository(context)
     suspend fun getAllGames(): List<Game> {
         return repository.getAllGames()
     }
 }
-
-

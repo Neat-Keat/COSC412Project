@@ -36,7 +36,7 @@ class GameDetailsViewModelFactory(
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(GameDetailsViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
+            ("UNCHECKED_CAST")
             val gameRepository = GameRepository(context)
             return GameDetailsViewModel(gameRepository, gameId) as T
         }

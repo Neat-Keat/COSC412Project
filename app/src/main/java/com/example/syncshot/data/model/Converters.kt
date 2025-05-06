@@ -24,8 +24,8 @@ class Converters {
 	//These two functions convert a 2D IntArray and back again
 	@TypeConverter
 	fun from2dIntArray(value: Array<IntArray>): String {
-		var temp: String = ""
-		for(i in 0 until value.size) {
+		var temp = ""
+		for(i in value.indices) {
 			temp += value[i].joinToString(",")
 			if (i != value.size - 1) {temp += ";"}
 		}
@@ -43,7 +43,7 @@ class Converters {
 	} else {
         val tempStrArray: Array<String> = value.split(";").toTypedArray()
         val int2dArray = Array(tempStrArray.size){IntArray(1){0}}
-        for(i in 0 until tempStrArray.size) {
+        for(i in tempStrArray.indices) {
             int2dArray[i] = tempStrArray[i].split(",").map { it.toInt() }.toIntArray()
         }
         return int2dArray
@@ -60,7 +60,7 @@ class Converters {
 	@TypeConverter
 	fun toStringArray(value: String): Array<String> {
 	return if (value.isEmpty()) {
-            Array<String>(1) { "Nobody" } // Return only the "name" Nobody if empty
+            Array(1) { "Nobody" } // Return only the "name" Nobody if empty
         } else {
             value.split(",").toTypedArray()
         }

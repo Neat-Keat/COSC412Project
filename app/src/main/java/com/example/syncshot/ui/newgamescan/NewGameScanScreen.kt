@@ -24,18 +24,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
 
 @Composable
-fun NewGameScanScreen(
-    modifier: Modifier = Modifier
-) {
+fun NewGameScanScreen() {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     // Permission state
     // ie does the app already have camera permission?
@@ -75,7 +72,7 @@ fun NewGameScanScreen(
         .requireLensFacing(CameraSelector.LENS_FACING_BACK)
         .build()
 
-    preview.setSurfaceProvider(previewView.surfaceProvider)
+    preview.surfaceProvider = previewView.surfaceProvider
 
     Scaffold(modifier = Modifier.padding(16.dp)) { innerPadding ->
         Column(

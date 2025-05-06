@@ -1,7 +1,5 @@
 package com.example.syncshot.data.model
-import com.example.syncshot.data.model.Converters
 
-import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
@@ -23,7 +21,7 @@ data class Game(
     var scores = Array(strokes.size){IntArray(18){0}}    //Stores the compared-to-par scores of each player, for each hole.  Initialized to all 0s, as though a player stroked Par every hole
     var finalScores = IntArray(strokes.size){0}          //Stores the final scores of each player
     init {
-        for (p in 0 until scores.size) {
+        for (p in scores.indices) {
     		for(i in 0..17) {
                 //if the number of strokes on a given hole is <= 0 (e.g. an invalid number) then it assumes they got Par on that hole
     			if (strokes[p][i] > 0) {
@@ -31,7 +29,7 @@ data class Game(
                 }
     		}
     	}
-    	for (p in 0 until finalScores.size) {
+    	for (p in finalScores.indices) {
     		finalScores[p] = scores[p].sum()
     	}
     }

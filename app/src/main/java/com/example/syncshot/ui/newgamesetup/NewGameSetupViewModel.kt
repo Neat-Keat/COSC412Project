@@ -1,12 +1,8 @@
-package com.example.syncshot.ui.newgame
+package com.example.syncshot.ui.newgamesetup
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import android.content.Context
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
 
-class NewGameSetupViewModel() : ViewModel() {
+class NewGameSetupViewModel : ViewModel() {
     var numberOfPlayersText = ""
     var gameDateText = ""
     var gameLocationText = ""
