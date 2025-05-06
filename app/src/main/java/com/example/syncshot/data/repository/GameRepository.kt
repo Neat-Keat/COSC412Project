@@ -23,20 +23,12 @@ class GameRepository(context: Context) {
         return gameDao.getGameById(id)
     }
 
-    fun updateGame(game: Game) {
-        CoroutineScope(Dispatchers.IO).launch {
-            gameDao.updateGame(game)
-        }
-    }
-
-    fun deleteGame(gameToDelete: Game) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val rowsDeleted = gameDao.delete(gameToDelete)
-            if (rowsDeleted > 0) {
-                println("Game deleted successfully.")
-            } else {
-                println("Game not found or delete failed.")
-            }
+    suspend fun deleteGame(gameToDelete: Game) {
+        val rowsDeleted = gameDao.delete(gameToDelete)
+        if (rowsDeleted > 0) {
+            println("Game deleted successfully.")
+        } else {
+            println("Game not found or delete failed.")
         }
     }
 

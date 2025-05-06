@@ -47,13 +47,6 @@ class GameListViewModel(application: Application) : AndroidViewModel(application
         _errorMessage.value = null
     }
 
-    fun addGame(game: Game) {
-        viewModelScope.launch {
-            repository.insertGame(game)
-            fetchGames()
-        }
-    }
-
     fun deleteGame(game: Game) {
         viewModelScope.launch {
             repository.deleteGame(game)
@@ -61,5 +54,3 @@ class GameListViewModel(application: Application) : AndroidViewModel(application
         }
     }
 }
-
-
