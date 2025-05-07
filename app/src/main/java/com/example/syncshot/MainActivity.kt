@@ -92,8 +92,8 @@ fun SyncShotApp(themeViewModel: ThemeViewModel, context: MainActivity) {
         }
 
         composable(Routes.NewGameScan) {
-            MainScaffold(navController = navController){
-                NewGameScanScreen()
+            MainScaffold(navController = navController) {
+                NewGameScanScreen(navController = navController)
             }
         }
 
