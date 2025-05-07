@@ -136,6 +136,7 @@ fun ExtrasDialog(onDismiss: () -> Unit, onAchievementsClick: () -> Unit, onAckno
             tonalElevation = 8.dp
         ) {
             Column(modifier = Modifier.padding(24.dp)) {
+                Text("Extras", style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onAchievementsClick, modifier = Modifier.fillMaxWidth()) {
                     Text("Achievements")

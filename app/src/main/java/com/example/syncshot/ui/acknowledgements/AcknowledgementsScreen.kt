@@ -31,7 +31,7 @@ fun AcknowledgementsScreen(themeViewModel: ThemeViewModel, modifier: Modifier = 
             Text("Matthew Sotelo")
 
             //TODO add what Michael did here
-            Text("Their work", modifier = Modifier.padding(0.dp, 16.dp, 16.dp, 2.dp), style = MaterialTheme.typography.headlineSmall)
+            Text("Data Persistence, Navigation", modifier = Modifier.padding(0.dp, 16.dp, 16.dp, 2.dp), style = MaterialTheme.typography.headlineSmall)
             Text("Michael Opoku")
 
             Text("Database, UI", modifier = Modifier.padding(0.dp, 16.dp, 16.dp, 2.dp), style = MaterialTheme.typography.headlineSmall)
