@@ -1,21 +1,12 @@
 package com.example.syncshot.ui.newgamescores
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -24,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.syncshot.ui.newgame.NewGameViewModel
+import com.example.syncshot.ui.newgamescores.NewGameViewModelFactory
 
 @Composable
 fun NewGameScoresScreen(
@@ -36,7 +28,11 @@ fun NewGameScoresScreen(
     val context = LocalContext.current
     val viewModel: NewGameViewModel = viewModel(factory = NewGameViewModelFactory(context))
 
-    // Update ViewModel with the passed arguments
+    // Collect flows as Compose state
+    val playerNames by viewModel.playerNames.collectAsState()
+    val strokes by viewModel.strokes.collectAsState()
+    val par by viewModel.par.collectAsState()
+
     viewModel.updateNumberOfPlayers(numPlayers)
     viewModel.updateGameDate(date)
     viewModel.updateGameLocation(location)
@@ -47,14 +43,12 @@ fun NewGameScoresScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Display Player Input Rows
         items(numPlayers) { playerIndex ->
-            PlayerInputRow(playerIndex, viewModel)
+            PlayerInputRow(playerIndex, playerNames, strokes, viewModel)
         }
 
-        // Display Par Input Row
         item {
-            ParInputRow(viewModel)
+            ParInputRow(par, viewModel)
         }
 
         item {
@@ -63,9 +57,7 @@ fun NewGameScoresScreen(
                 onClick = {
                     viewModel.insertGame()
                     navController.navigate("gameList") {
-                        popUpTo("gameList") {
-                            inclusive = true
-                        }
+                        popUpTo("gameList") { inclusive = true }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -77,45 +69,54 @@ fun NewGameScoresScreen(
 }
 
 @Composable
-fun PlayerInputRow(playerIndex: Int, viewModel: NewGameViewModel) {
+fun PlayerInputRow(
+    playerIndex: Int,
+    playerNames: Array<String>,
+    strokes: Array<IntArray>,
+    viewModel: NewGameViewModel
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
         Text(
-            text = viewModel.playerNames[playerIndex],
+            text = playerNames[playerIndex],
             modifier = Modifier
                 .padding(bottom = 8.dp)
                 .align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center
         )
-        // First Row (Holes 1-6)
+
         Row(modifier = Modifier.fillMaxWidth()) {
             for (holeIndex in 0 until 6) {
-                HoleInput(playerIndex, holeIndex, viewModel)
+                HoleInput(playerIndex, holeIndex, strokes, viewModel)
             }
         }
-        // Second Row (Holes 7-12)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (holeIndex in 6 until 12) {
-                HoleInput(playerIndex, holeIndex, viewModel)
+                HoleInput(playerIndex, holeIndex, strokes, viewModel)
             }
         }
-        // Third Row (Holes 13-18)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (holeIndex in 12 until 18) {
-                HoleInput(playerIndex, holeIndex, viewModel)
+                HoleInput(playerIndex, holeIndex, strokes, viewModel)
             }
         }
     }
 }
 
 @Composable
-fun RowScope.HoleInput(playerIndex: Int, holeIndex: Int, viewModel: NewGameViewModel){
+fun RowScope.HoleInput(
+    playerIndex: Int,
+    holeIndex: Int,
+    strokes: Array<IntArray>,
+    viewModel: NewGameViewModel
+) {
     var strokesText by remember {
-        mutableStateOf(viewModel.strokes[playerIndex][holeIndex].toString())
+        mutableStateOf(strokes[playerIndex][holeIndex].takeIf { it > 0 }?.toString() ?: "")
     }
+
     TextField(
         value = strokesText,
         onValueChange = { newText ->
@@ -132,7 +133,7 @@ fun RowScope.HoleInput(playerIndex: Int, holeIndex: Int, viewModel: NewGameViewM
 }
 
 @Composable
-fun ParInputRow(viewModel: NewGameViewModel) {
+fun ParInputRow(par: IntArray, viewModel: NewGameViewModel) {
     Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(
             text = "Par",
@@ -141,30 +142,31 @@ fun ParInputRow(viewModel: NewGameViewModel) {
                 .align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center
         )
-        // First Row (Holes 1-6)
+
         Row(modifier = Modifier.fillMaxWidth()) {
             for (parIndex in 0 until 6) {
-                ParHoleInput(parIndex, viewModel)
+                ParHoleInput(parIndex, par, viewModel)
             }
         }
-        // Second Row (Holes 7-12)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (parIndex in 6 until 12) {
-                ParHoleInput(parIndex, viewModel)
+                ParHoleInput(parIndex, par, viewModel)
             }
         }
-        // Third Row (Holes 13-18)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (parIndex in 12 until 18) {
-                ParHoleInput(parIndex, viewModel)
+                ParHoleInput(parIndex, par, viewModel)
             }
         }
     }
 }
 
 @Composable
-fun RowScope.ParHoleInput(parIndex: Int, viewModel: NewGameViewModel){
-    var parText by remember { mutableStateOf(viewModel.par[parIndex].toString()) }
+fun RowScope.ParHoleInput(parIndex: Int, par: IntArray, viewModel: NewGameViewModel) {
+    var parText by remember {
+        mutableStateOf(par.getOrNull(parIndex)?.takeIf { it > 0 }?.toString() ?: "")
+    }
+
     TextField(
         value = parText,
         onValueChange = { newText ->
