@@ -6,25 +6,27 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.syncshot.ocr.ImageRecognition // Import your ImageRecognition class
+import com.example.syncshot.ocr.ImageRecognition
+import com.example.syncshot.ocr.PlayerRound
+import com.example.syncshot.data.model.Game
+import com.example.syncshot.data.repository.GameRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 class NewGameViewModel(private val context: Context) : ViewModel() {
 
-    // Inject the ImageRecognition dependency
     private val ocrProcessor = ImageRecognition(context)
+    private val repository = GameRepository(context)
 
-    // StateFlows to hold the UI state
     private val _hasCameraPermission = MutableStateFlow(false)
     val hasCameraPermission: StateFlow<Boolean> = _hasCameraPermission.asStateFlow()
 
     private val _scanStatus = MutableStateFlow<String?>(null)
     val scanStatus: StateFlow<String?> = _scanStatus.asStateFlow()
 
-    // StateFlows to hold the scanned data
     private val _playerNames = MutableStateFlow<Array<String>>(emptyArray())
     val playerNames: StateFlow<Array<String>> = _playerNames.asStateFlow()
 
@@ -37,8 +39,6 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
     private val _numberOfPlayers = MutableStateFlow(0)
     val numberOfPlayers: StateFlow<Int> = _numberOfPlayers.asStateFlow()
 
-    // You might also want to store game date and location if collected elsewhere
-    // These could be initialized or set by another function if needed before scan
     var gameDate: String? = null
     var gameLocation: String? = null
 
@@ -46,12 +46,71 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
         _hasCameraPermission.value = isGranted
     }
 
-    /**
-     * Processes the image using the OCR engine and updates ViewModel state.
-     */
+    fun updateNumberOfPlayers(count: Int) {
+        _numberOfPlayers.value = count
+        _playerNames.value = Array(count) { "Player ${it + 1}" }
+        _strokes.value = Array(count) { IntArray(18) { 0 } }
+    }
+
+    fun updateGameDate(date: String?) {
+        gameDate = date
+    }
+
+    fun updateGameLocation(location: String?) {
+        gameLocation = location
+    }
+
+    fun updatePlayerName(index: Int, name: String) {
+        val updated = _playerNames.value.copyOf()
+        if (index in updated.indices) {
+            updated[index] = name
+            _playerNames.value = updated
+        }
+    }
+
+    fun updateStrokes(playerIndex: Int, holeIndex: Int, value: Int) {
+        val updated = _strokes.value.map { it.copyOf() }.toTypedArray()
+        if (playerIndex in updated.indices && holeIndex in updated[playerIndex].indices) {
+            updated[playerIndex][holeIndex] = value
+            _strokes.value = updated
+        }
+    }
+
+    fun updatePar(holeIndex: Int, value: Int) {
+        val updated = _par.value.copyOf()
+        if (holeIndex in updated.indices) {
+            updated[holeIndex] = value
+            _par.value = updated
+        }
+    }
+
+    fun insertGame() {
+        viewModelScope.launch {
+            val names = _playerNames.value
+            val scores = _strokes.value
+            val parValues = _par.value
+
+            if (names.any { it.isBlank() } || scores.any { it.all { s -> s <= 0 } }) {
+                _scanStatus.value = "Invalid game data. Please review before saving."
+                return@launch
+            }
+
+            val newGame = Game(
+                id = UUID.randomUUID().toString(),
+                names = names,
+                strokes = scores,
+                par = parValues,
+                date = gameDate,
+                location = gameLocation
+            )
+
+            repository.insertGame(newGame)
+            _scanStatus.value = "Game saved successfully."
+        }
+    }
+
     fun processSelectedImage(imageUri: Uri) {
         _scanStatus.value = "Processing image..."
-        // Clear previous scan results while processing
         _playerNames.value = emptyArray()
         _strokes.value = emptyArray()
         _par.value = IntArray(18) { -1 }
@@ -59,48 +118,29 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
 
         viewModelScope.launch {
             try {
-                // Call the OCR processor
                 ocrProcessor.processScorecardImage(
                     imageUri = imageUri,
-                    onResult = { playerRounds ->
-                        // When OCR is successful, update the ViewModel's state
+                    onResult = { playerRounds: List<PlayerRound> ->
                         val names = playerRounds.map { it.name }.toTypedArray()
                         val strokes = playerRounds.map { it.scores }.toTypedArray()
-                        // Assuming par is the same for all players, take it from the first one
                         val par = playerRounds.firstOrNull()?.par ?: IntArray(18) { -1 }
 
                         _playerNames.value = names
                         _strokes.value = strokes
                         _par.value = par
-                        _numberOfPlayers.value = playerRounds.size // Update number of players
+                        _numberOfPlayers.value = playerRounds.size
 
                         _scanStatus.value = "Scan complete! Found ${playerRounds.size} players."
                     },
-                    onError = { exception ->
-                        // Handle OCR errors
-                        _scanStatus.value = "Scan failed: ${exception.message}"
-                        Log.e("NewGameViewModel", "OCR Error: ${exception.message}", exception)
+                    onError = { e ->
+                        _scanStatus.value = "Scan failed: ${e.message}"
+                        Log.e("NewGameViewModel", "OCR Error: ${e.message}", e)
                     }
                 )
             } catch (e: Exception) {
-                // Handle potential errors before the OCR process starts (e.g., invalid URI)
                 _scanStatus.value = "Scan failed: ${e.message}"
                 Log.e("NewGameViewModel", "Error initiating scan: ${e.message}", e)
             }
         }
-    }
-
-    // You might add other functions here for saving game data, etc.
-}
-
-// ViewModel Factory (likely already exists based on your ScanScreen code)
-// This is needed to pass the Context to the ViewModel
-class NewGameViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(NewGameViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return NewGameViewModel(context.applicationContext) as T // Use applicationContext to avoid memory leaks
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
