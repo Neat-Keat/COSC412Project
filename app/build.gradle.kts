@@ -85,4 +85,5 @@ dependencies {
     implementation(libs.androidx.camera.core) // Or latest version
     implementation(libs.androidx.camera.lifecycle) // Or latest version
     implementation(libs.androidx.camera.view) // Or latest version
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }

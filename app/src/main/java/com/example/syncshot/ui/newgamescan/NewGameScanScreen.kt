@@ -12,6 +12,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,6 +25,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.syncshot.ui.newgame.NewGameViewModel
 import com.example.syncshot.ui.newgamescores.NewGameViewModelFactory
 import com.example.syncshot.ui.nav.Routes
@@ -63,7 +65,10 @@ fun NewGameScanScreen(
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri ->
-            uri?.let { viewModel.processSelectedImage(it) }
+            uri?.let {
+                tempPhotoUri = it
+                viewModel.processSelectedImage(it)
+            }
         }
     )
 
@@ -115,6 +120,7 @@ fun NewGameScanScreen(
                     onClick = {
                         val photoUri = createTempImageUri(context)
                         tempPhotoUri = photoUri
+                        viewModel.processSelectedImage(photoUri)
                         takePictureLauncher.launch(photoUri)
                     },
                     modifier = Modifier.fillMaxWidth()
@@ -125,10 +131,26 @@ fun NewGameScanScreen(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { pickImageLauncher.launch("image/*") },
+                    onClick = {
+                        tempPhotoUri = null
+                        viewModel.setCameraPermissionStatus(true)
+                        pickImageLauncher.launch("image/*")
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Pick from Gallery")
+                }
+
+                tempPhotoUri?.let { uri ->
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Image(
+                        painter = rememberAsyncImagePainter(uri),
+                        contentDescription = "Selected Image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(bottom = 8.dp)
+                    )
                 }
 
                 if (!scanStatus.isNullOrBlank()) {

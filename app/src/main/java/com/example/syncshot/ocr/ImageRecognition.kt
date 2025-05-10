@@ -6,8 +6,11 @@ import android.net.Uri
 import android.util.Log
 import com.googlecode.tesseract.android.TessBaseAPI
 import java.io.File
+import java.io.FileOutputStream
 import java.util.regex.Pattern
 import kotlin.math.abs
+
+// Data classes
 
 data class PlayerRound(
     val name: String = "Player",
@@ -22,9 +25,13 @@ data class TextBlock(
     val confidence: Int = 100
 )
 
+// Custom Exceptions
+
 class TesseractInitializationException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class ImageDecodingException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class DataExtractionException(message: String, cause: Throwable? = null) : Exception(message, cause)
+
+// OCR Image Processor
 
 class ImageRecognition(private val context: Context) {
 
@@ -50,7 +57,6 @@ class ImageRecognition(private val context: Context) {
         return try {
             val tessBaseAPI = TessBaseAPI()
             val tessDataPath = File(context.filesDir, "tessdata")
-
             if (!tessDataPath.exists()) tessDataPath.mkdirs()
 
             val trainedDataFile = File(tessDataPath, "eng.traineddata")
@@ -72,10 +78,13 @@ class ImageRecognition(private val context: Context) {
 
     private fun extractTextBlocks(tessBaseAPI: TessBaseAPI, imageUri: Uri): List<TextBlock> {
         return try {
+            Log.d("OCR", "Opening input stream from URI: $imageUri")
             val inputStream = context.contentResolver.openInputStream(imageUri)
+                ?: throw ImageDecodingException("Input stream was null – possible content URI issue")
+
             val originalBitmap = BitmapFactory.decodeStream(inputStream)
-                ?: throw ImageDecodingException("Unable to decode image")
-            inputStream?.close()
+                ?: throw ImageDecodingException("Bitmap decode failed")
+            inputStream.close()
 
             val resizedBitmap = resizeBitmapIfNeeded(originalBitmap, maxWidth = 1000)
             Log.d("OCR", "Bitmap dimensions: ${resizedBitmap.width}x${resizedBitmap.height}")
@@ -83,10 +92,17 @@ class ImageRecognition(private val context: Context) {
             val grayscale = toGrayscale(resizedBitmap)
             Log.d("OCR", "Grayscale dimensions: ${grayscale.width}x${grayscale.height}")
 
+            // Optional: Save grayscale image for debugging
+            val debugFile = File(context.cacheDir, "grayscale_debug.png")
+            grayscale.compress(Bitmap.CompressFormat.PNG, 100, FileOutputStream(debugFile))
+            Log.d("OCR", "Saved grayscale image at: ${debugFile.absolutePath}")
+
             tessBaseAPI.setImage(grayscale)
             Log.d("OCR", "Tesseract image set. Attempting to extract...")
 
-            val iterator = tessBaseAPI.resultIterator ?: throw DataExtractionException("No OCR results found")
+            val iterator = tessBaseAPI.resultIterator
+                ?: throw DataExtractionException("No OCR results found")
+
             val blocks = mutableListOf<TextBlock>()
 
             do {
@@ -99,14 +115,16 @@ class ImageRecognition(private val context: Context) {
                 }
                 val confidence = iterator.confidence(TessBaseAPI.PageIteratorLevel.RIL_WORD)
 
-                if (!word.isNullOrBlank() && confidence > 60) {
+                if (!word.isNullOrBlank() && confidence > 30) {  // Lowered threshold to catch more text
                     val cleaned = cleanOcrText(word)
                     blocks.add(TextBlock(cleaned, rect, confidence.toInt()))
                 }
             } while (iterator.next(TessBaseAPI.PageIteratorLevel.RIL_WORD))
 
+            Log.d("OCR", "Total text blocks extracted: ${blocks.size}")
             blocks
         } catch (e: Exception) {
+            Log.e("OCR", "Exception during extractTextBlocks: ${e.message}", e)
             throw DataExtractionException("Error extracting OCR text", e)
         }
     }
@@ -127,11 +145,7 @@ class ImageRecognition(private val context: Context) {
         val rows = groupBlocksIntoRows(blocks)
         val parRow = rows.firstOrNull { row -> row.any { it.equals("par", ignoreCase = true) } }
 
-        val par = parRow
-            ?.drop(1)
-            ?.mapNotNull { it.toIntOrNull() }
-            ?.padTo18()
-            ?.toIntArray()
+        val par = parRow?.drop(1)?.mapNotNull { it.toIntOrNull() }?.padTo18()?.toIntArray()
 
         return rows
             .filterIndexed { index, row -> isPlayerRow(row, index, parRow?.let { rows.indexOf(it) } ?: -1) }
@@ -165,7 +179,6 @@ class ImageRecognition(private val context: Context) {
 
     private fun isPlayerRow(row: List<String>, index: Int, parRowIndex: Int): Boolean {
         val first = row.firstOrNull()?.lowercase() ?: ""
-
         val isParRow = index == parRowIndex
         val isHeader = first == "player" && row.drop(1).count { it.toIntOrNull() != null } > 5
         val isTeeRow = listOf("black", "blue", "white", "red", "gold", "silver").any { first.startsWith(it) }
@@ -187,8 +200,7 @@ class ImageRecognition(private val context: Context) {
     }
 
     private fun cleanOcrText(text: String): String {
-        return text
-            .replace("S", "5", ignoreCase = true)
+        return text.replace("S", "5", ignoreCase = true)
             .replace("O", "0")
             .replace("l", "1")
             .trim()
@@ -210,5 +222,4 @@ class ImageRecognition(private val context: Context) {
         }
     }
 }
-
 
