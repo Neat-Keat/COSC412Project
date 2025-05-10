@@ -79,6 +79,7 @@ class ImageRecognition(private val context: Context) {
     private fun extractTextBlocks(tessBaseAPI: TessBaseAPI, imageUri: Uri): List<TextBlock> {
         return try {
             Log.d("OCR", "Opening input stream from URI: $imageUri")
+
             val inputStream = context.contentResolver.openInputStream(imageUri)
                 ?: throw ImageDecodingException("Input stream was null – possible content URI issue")
 
@@ -86,13 +87,10 @@ class ImageRecognition(private val context: Context) {
                 ?: throw ImageDecodingException("Bitmap decode failed")
             inputStream.close()
 
+            Log.d("OCR", "Decoded bitmap dimensions: ${originalBitmap.width}x${originalBitmap.height}")
             val resizedBitmap = resizeBitmapIfNeeded(originalBitmap, maxWidth = 1000)
-            Log.d("OCR", "Bitmap dimensions: ${resizedBitmap.width}x${resizedBitmap.height}")
-
             val grayscale = toGrayscale(resizedBitmap)
-            Log.d("OCR", "Grayscale dimensions: ${grayscale.width}x${grayscale.height}")
 
-            // Optional: Save grayscale image for debugging
             val debugFile = File(context.cacheDir, "grayscale_debug.png")
             grayscale.compress(Bitmap.CompressFormat.PNG, 100, FileOutputStream(debugFile))
             Log.d("OCR", "Saved grayscale image at: ${debugFile.absolutePath}")
@@ -104,7 +102,6 @@ class ImageRecognition(private val context: Context) {
                 ?: throw DataExtractionException("No OCR results found")
 
             val blocks = mutableListOf<TextBlock>()
-
             do {
                 val word = iterator.getUTF8Text(TessBaseAPI.PageIteratorLevel.RIL_WORD)
                 val rect = try {
@@ -115,7 +112,7 @@ class ImageRecognition(private val context: Context) {
                 }
                 val confidence = iterator.confidence(TessBaseAPI.PageIteratorLevel.RIL_WORD)
 
-                if (!word.isNullOrBlank() && confidence > 30) {  // Lowered threshold to catch more text
+                if (!word.isNullOrBlank() && confidence > 30) {
                     val cleaned = cleanOcrText(word)
                     blocks.add(TextBlock(cleaned, rect, confidence.toInt()))
                 }
@@ -222,4 +219,3 @@ class ImageRecognition(private val context: Context) {
         }
     }
 }
-
