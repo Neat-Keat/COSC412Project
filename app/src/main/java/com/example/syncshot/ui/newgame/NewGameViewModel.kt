@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.util.UUID
+import androidx.core.content.FileProvider
+import java.io.File
+
 
 class NewGameViewModel(private val context: Context) : ViewModel() {
 
@@ -116,20 +119,22 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
         _par.value = IntArray(18) { -1 }
         _numberOfPlayers.value = 0
 
+        Log.d("ImageSelect", "Selected URI: $imageUri")
+
+        val safeUri = copyUriToFile(imageUri, context) ?: run {
+            _scanStatus.value = "Failed to read image"
+            return
+        }
+
         viewModelScope.launch {
             try {
                 ocrProcessor.processScorecardImage(
-                    imageUri = imageUri,
-                    onResult = { playerRounds: List<PlayerRound> ->
-                        val names = playerRounds.map { it.name }.toTypedArray()
-                        val strokes = playerRounds.map { it.scores }.toTypedArray()
-                        val par = playerRounds.firstOrNull()?.par ?: IntArray(18) { -1 }
-
-                        _playerNames.value = names
-                        _strokes.value = strokes
-                        _par.value = par
+                    imageUri = safeUri,
+                    onResult = { playerRounds ->
+                        _playerNames.value = playerRounds.map { it.name }.toTypedArray()
+                        _strokes.value = playerRounds.map { it.scores }.toTypedArray()
+                        _par.value = playerRounds.firstOrNull()?.par ?: IntArray(18) { -1 }
                         _numberOfPlayers.value = playerRounds.size
-
                         _scanStatus.value = "Scan complete! Found ${playerRounds.size} players."
                     },
                     onError = { e ->
@@ -141,6 +146,19 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
                 _scanStatus.value = "Scan failed: ${e.message}"
                 Log.e("NewGameViewModel", "Error initiating scan: ${e.message}", e)
             }
+        }
+    }
+    private fun copyUriToFile(uri: Uri, context: Context): Uri? {
+        return try {
+            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
+            val tempFile = File.createTempFile("scorecard_", ".jpg", context.cacheDir)
+            tempFile.outputStream().use { output ->
+                inputStream.copyTo(output)
+            }
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", tempFile)
+        } catch (e: Exception) {
+            Log.e("FileCopy", "Failed to copy URI: ${e.message}", e)
+            null
         }
     }
 }
