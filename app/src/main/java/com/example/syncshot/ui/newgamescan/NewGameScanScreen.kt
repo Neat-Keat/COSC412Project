@@ -95,12 +95,13 @@ fun NewGameScanScreen(
             if (hasCameraPermission) {
                 val previewView = remember { PreviewView(context) }
 
-                AndroidView(
-                    factory = { previewView },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(bottom = 16.dp)
-                )
+                //commented out bc it ruins legibility of lower buttons
+//                AndroidView(
+//                    factory = { previewView },
+//                    modifier = Modifier
+//                        .weight(1f)
+//                        .padding(bottom = 16.dp)
+//                )
 
                 LaunchedEffect(Unit) {
                     try {
