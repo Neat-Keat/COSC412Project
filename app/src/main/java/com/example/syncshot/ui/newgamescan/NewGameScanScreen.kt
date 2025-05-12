@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -62,7 +63,6 @@ fun NewGameScanScreen(
     val numberOfPlayersState by viewModel.numberOfPlayers.collectAsState()
 
     var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
-
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted -> viewModel.setCameraPermissionStatus(granted) }
@@ -143,7 +143,7 @@ fun NewGameScanScreen(
                 ) {
                     Text("Take Photo")
                 }
-
+                
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
@@ -201,7 +201,6 @@ fun NewGameScanScreen(
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
-
                             Text("Par:", style = MaterialTheme.typography.bodyLarge)
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 repeat(18) { holeIndex ->

@@ -1,12 +1,6 @@
 package com.example.syncshot.ui.newgamescores
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
@@ -66,7 +60,6 @@ fun NewGameScoresScreen(
             Spacer(modifier = Modifier.height(16.dp))
         }
 
-        // Display Player Input Rows
         items(numPlayers) { playerIndex ->
             // Pass the collected state to the composable
             PlayerInputRow(
@@ -77,7 +70,6 @@ fun NewGameScoresScreen(
             )
         }
 
-        // Display Par Input Row
         item {
             // Pass the collected state to the composable
             ParInputRow(
@@ -95,9 +87,7 @@ fun NewGameScoresScreen(
                     // and the ViewModel's state indicates success.
                     // For simplicity, navigating immediately after calling insertGame.
                     navController.navigate("gameList") {
-                        popUpTo("gameList") {
-                            inclusive = true
-                        }
+                        popUpTo("gameList") { inclusive = true }
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -127,7 +117,7 @@ fun PlayerInputRow(
                 .align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center
         )
-        // First Row (Holes 1-6)
+
         Row(modifier = Modifier.fillMaxWidth()) {
             for (holeIndex in 0 until 6) {
                 HoleInput(
@@ -137,7 +127,6 @@ fun PlayerInputRow(
                 )
             }
         }
-        // Second Row (Holes 7-12)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (holeIndex in 6 until 12) {
                 HoleInput(
@@ -147,7 +136,6 @@ fun PlayerInputRow(
                 )
             }
         }
-        // Third Row (Holes 13-18)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (holeIndex in 12 until 18) {
                 HoleInput(
@@ -198,7 +186,7 @@ fun ParInputRow(
                 .align(Alignment.CenterHorizontally),
             textAlign = TextAlign.Center
         )
-        // First Row (Holes 1-6)
+
         Row(modifier = Modifier.fillMaxWidth()) {
             for (parIndex in 0 until 6) {
                 ParHoleInput(
@@ -208,7 +196,6 @@ fun ParInputRow(
                 )
             }
         }
-        // Second Row (Holes 7-12)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (parIndex in 6 until 12) {
                 ParHoleInput(
@@ -218,7 +205,6 @@ fun ParInputRow(
                 )
             }
         }
-        // Third Row (Holes 13-18)
         Row(modifier = Modifier.fillMaxWidth()) {
             for (parIndex in 12 until 18) {
                 ParHoleInput(
@@ -254,18 +240,3 @@ fun RowScope.ParHoleInput(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number) // Suggest numeric keyboard
     )
 }
-
-// Assuming you have a NewGameViewModelFactory defined elsewhere
-// If not, you need to create one or use Hilt for dependency injection.
-// Example Factory:
-/*
-class NewGameViewModelFactory(private val context: Context) : ViewModelProvider.Factory {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(NewGameViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
-            return NewGameViewModel(context) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}
-*/

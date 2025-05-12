@@ -224,3 +224,4 @@ class ImageRecognition(private val context: Context) {
         }
     }
 }
+

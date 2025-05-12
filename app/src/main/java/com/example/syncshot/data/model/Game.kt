@@ -3,6 +3,7 @@ package com.example.syncshot.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import com.example.syncshot.data.model.Converters
 
 //This is the custom data type we are using to store info related to every golf game entry
 @Entity(tableName = "games")
