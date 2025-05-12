@@ -2,7 +2,6 @@ package com.example.syncshot.ui.newgamescores
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -22,7 +21,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.syncshot.ui.newgame.NewGameViewModel
-import com.example.syncshot.ui.newgamescores.NewGameViewModelFactory // Assuming you have a factory like this
 
 @Composable
 fun NewGameScoresScreen(
@@ -65,7 +63,7 @@ fun NewGameScoresScreen(
             PlayerInputRow(
                 playerIndex = playerIndex,
                 playerName = playerNames.getOrNull(playerIndex) ?: "Player ${playerIndex + 1}", // Use getOrNull for safety
-                playerStrokes = strokes.getOrNull(playerIndex) ?: IntArray(18) { 0 }, // Use getOrNull for safety
+                playerStrokes = strokes.getOrNull(playerIndex) ?: IntArray(18), // Use getOrNull for safety
                 onStrokesChange = { holeIndex, value -> viewModel.updateStrokes(playerIndex, holeIndex, value) }
             )
         }
