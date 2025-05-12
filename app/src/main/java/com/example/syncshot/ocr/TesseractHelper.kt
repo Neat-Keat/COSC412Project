@@ -1,4 +1,3 @@
-// app/src/main/java/com/example/syncshot/ocr/TesseractHelper.kt
 package com.example.syncshot.ocr
 
 import android.app.Application

@@ -6,16 +6,14 @@ import android.net.Uri
 import android.util.Log
 import com.googlecode.tesseract.android.TessBaseAPI
 import java.io.File
+import java.io.FileOutputStream
 import java.util.regex.Pattern
 import kotlin.math.abs
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
-/**
- * Data class representing one player's round of golf.
- * - name: Player's name (or default)
- * - playerNumber: Order number (e.g., Player 1, Player 2, etc.)
- * - scores: Array of 18 hole scores (pad with -1 for missing)
- * - par: Par values for each hole (optional)
- */
+// Data classes
+
 data class PlayerRound(
     val name: String = "Player",
     val playerNumber: Int,
@@ -23,40 +21,33 @@ data class PlayerRound(
     val par: IntArray?
 )
 
-/**
- * Represents a single OCR-detected word along with its bounding box and confidence score.
- */
 data class TextBlock(
     val text: String,
     val boundingBox: Rect,
     val confidence: Int = 100
 )
 
-// Custom exception classes for more specific error reporting
+// Custom Exceptions
+
 class TesseractInitializationException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class ImageDecodingException(message: String, cause: Throwable? = null) : Exception(message, cause)
 class DataExtractionException(message: String, cause: Throwable? = null) : Exception(message, cause)
 
-/**
- * Core OCR processor class that uses Tesseract to extract structured scorecard data.
- */
+// OCR Image Processor
+
 class ImageRecognition(private val context: Context) {
 
-    /**
-     * Public function to process an image and extract players' scores.
-     * Returns list of PlayerRound objects or an error via callback.
-     */
     fun processScorecardImage(
         imageUri: Uri,
         onResult: (List<PlayerRound>) -> Unit,
         onError: (Exception) -> Unit
     ) {
         try {
-            val tessBaseAPI = initializeTesseract()                     // Load and init Tesseract
-            val blocks = extractTextBlocks(tessBaseAPI, imageUri)      // OCR scan into word blocks
-            tessBaseAPI.end()                                          // Clean up resources
+            val tessBaseAPI = initializeTesseract()
+            val blocks = extractTextBlocks(tessBaseAPI, imageUri)
+            tessBaseAPI.end()
 
-            val players = parseTextBlocks(blocks)                      // Parse rows into PlayerRound objects
+            val players = parseTextBlocks(blocks)
             onResult(players)
         } catch (e: Exception) {
             Log.e("TESSERACT_OCR", "OCR error: ${e.message}", e)
@@ -64,17 +55,12 @@ class ImageRecognition(private val context: Context) {
         }
     }
 
-    /**
-     * Sets up the Tesseract engine and loads trained language data.
-     */
     private fun initializeTesseract(): TessBaseAPI {
         return try {
             val tessBaseAPI = TessBaseAPI()
             val tessDataPath = File(context.filesDir, "tessdata")
-
             if (!tessDataPath.exists()) tessDataPath.mkdirs()
 
-            // Copy eng.traineddata from assets to internal storage if missing
             val trainedDataFile = File(tessDataPath, "eng.traineddata")
             if (!trainedDataFile.exists()) {
                 context.assets.open("tessdata/eng.traineddata").use { input ->
@@ -82,70 +68,92 @@ class ImageRecognition(private val context: Context) {
                 }
             }
 
-            tessBaseAPI.init(context.filesDir.absolutePath, "eng")
+            if (!tessBaseAPI.init(context.filesDir.absolutePath, "eng")) {
+                throw TesseractInitializationException("Tesseract init failed")
+            }
+
             tessBaseAPI
         } catch (e: Exception) {
             throw TesseractInitializationException("Failed to initialize Tesseract", e)
         }
     }
 
-    /**
-     * Converts the image to grayscale and performs OCR.
-     * Returns a list of words with bounding boxes and confidence.
-     */
     private fun extractTextBlocks(tessBaseAPI: TessBaseAPI, imageUri: Uri): List<TextBlock> {
         return try {
+            Log.d("OCR", "Opening input stream from URI: $imageUri")
             val inputStream = context.contentResolver.openInputStream(imageUri)
-            val bitmap = BitmapFactory.decodeStream(inputStream)
-                ?: throw ImageDecodingException("Unable to decode image")
-            inputStream?.close()
+                ?: throw ImageDecodingException("Input stream was null – possible content URI issue")
 
-            val grayscale = toGrayscale(bitmap)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+                ?: throw ImageDecodingException("Bitmap decode failed")
+            inputStream.close()
+
+            val resizedBitmap = resizeBitmapIfNeeded(originalBitmap, maxWidth = 1000)
+            Log.d("OCR", "Bitmap dimensions: ${resizedBitmap.width}x${resizedBitmap.height}")
+
+            val grayscale = toGrayscale(resizedBitmap)
+            Log.d("OCR", "Grayscale dimensions: ${grayscale.width}x${grayscale.height}")
+
+            // Optional: Save grayscale image for debugging
+            val debugFile = File(context.cacheDir, "grayscale_debug.png")
+            grayscale.compress(Bitmap.CompressFormat.PNG, 100, FileOutputStream(debugFile))
+            Log.d("OCR", "Saved grayscale image at: ${debugFile.absolutePath}")
+
             tessBaseAPI.setImage(grayscale)
+            Log.d("OCR", "Tesseract image set. Attempting to extract...")
 
             val iterator = tessBaseAPI.resultIterator
+                ?: throw DataExtractionException("No OCR results found")
+
             val blocks = mutableListOf<TextBlock>()
 
             do {
                 val word = iterator.getUTF8Text(TessBaseAPI.PageIteratorLevel.RIL_WORD)
-                val rect = iterator.getBoundingRect(TessBaseAPI.PageIteratorLevel.RIL_WORD)
+                val rect = try {
+                    iterator.getBoundingRect(TessBaseAPI.PageIteratorLevel.RIL_WORD)
+                } catch (e: Exception) {
+                    Log.e("OCR", "Bounding box retrieval failed", e)
+                    continue
+                }
                 val confidence = iterator.confidence(TessBaseAPI.PageIteratorLevel.RIL_WORD)
 
-                if (!word.isNullOrBlank() && confidence > 60) {
+                if (!word.isNullOrBlank() && confidence > 30) {  // Lowered threshold to catch more text
                     val cleaned = cleanOcrText(word)
                     blocks.add(TextBlock(cleaned, rect, confidence.toInt()))
                 }
             } while (iterator.next(TessBaseAPI.PageIteratorLevel.RIL_WORD))
 
+            Log.d("OCR", "Total text blocks extracted: ${blocks.size}")
             blocks
         } catch (e: Exception) {
+            Log.e("OCR", "Exception during extractTextBlocks: ${e.message}", e)
             throw DataExtractionException("Error extracting OCR text", e)
         }
     }
 
-    /**
-     * Parses the OCR blocks into rows, finds par values, and extracts player rows.
-     */
+    private fun resizeBitmapIfNeeded(bitmap: Bitmap, maxWidth: Int): Bitmap {
+        return if (bitmap.width > maxWidth) {
+            val ratio = bitmap.height.toFloat() / bitmap.width
+            val targetHeight = (maxWidth * ratio).toInt()
+            bitmap.scale(maxWidth, targetHeight)
+        } else {
+            bitmap
+        }
+    }
+
     private fun parseTextBlocks(blocks: List<TextBlock>): List<PlayerRound> {
         if (blocks.isEmpty()) return emptyList()
 
         val rows = groupBlocksIntoRows(blocks)
         val parRow = rows.firstOrNull { row -> row.any { it.equals("par", ignoreCase = true) } }
 
-        val par = parRow
-            ?.drop(1)
-            ?.mapNotNull { it.toIntOrNull() }
-            ?.padTo18()
-            ?.toIntArray()
+        val par = parRow?.drop(1)?.mapNotNull { it.toIntOrNull() }?.padTo18()?.toIntArray()
 
         return rows
             .filterIndexed { index, row -> isPlayerRow(row, index, parRow?.let { rows.indexOf(it) } ?: -1) }
             .mapIndexed { index, row -> processPlayerRow(row, index, par) }
     }
 
-    /**
-     * Groups words that are vertically aligned into row-like structures.
-     */
     private fun groupBlocksIntoRows(blocks: List<TextBlock>, tolerance: Int = 15): List<List<String>> {
         val sorted = blocks.sortedBy { it.boundingBox.top }
         val rows = mutableListOf<MutableList<TextBlock>>()
@@ -158,12 +166,8 @@ class ImageRecognition(private val context: Context) {
         return rows.map { it.sortedBy { b -> b.boundingBox.left }.map { b -> b.text } }
     }
 
-    /**
-     * Converts one row of OCR text into a PlayerRound object (name, scores, par).
-     */
     private fun processPlayerRow(row: List<String>, index: Int, par: IntArray?): PlayerRound {
         val name = extractPlayerName(row) ?: "Player ${index + 1}"
-
         val possibleScores = row.filter { isScoreLike(it) }.mapNotNull { it.toIntOrNull() }
 
         val scores = when {
@@ -175,12 +179,8 @@ class ImageRecognition(private val context: Context) {
         return PlayerRound(name, index + 1, scores, par)
     }
 
-    /**
-     * Determines if a row contains player scores by filtering out headers, tee rows, and distance rows.
-     */
     private fun isPlayerRow(row: List<String>, index: Int, parRowIndex: Int): Boolean {
         val first = row.firstOrNull()?.lowercase() ?: ""
-
         val isParRow = index == parRowIndex
         val isHeader = first == "player" && row.drop(1).count { it.toIntOrNull() != null } > 5
         val isTeeRow = listOf("black", "blue", "white", "red", "gold", "silver").any { first.startsWith(it) }
@@ -192,37 +192,24 @@ class ImageRecognition(private val context: Context) {
         return !isParRow && !isHeader && !isTeeRow && !isHoleRow && !isDistanceRow && numbers.count { it > -1 } >= 2
     }
 
-    /**
-     * Extracts the first valid name string from a row.
-     */
     private fun extractPlayerName(row: List<String>): String? {
-        val pattern = Pattern.compile("^[a-zA-Z\\s]+\$")
+        val pattern = Pattern.compile("^[a-zA-Z\\s]+")
         return row.firstOrNull { pattern.matcher(it).matches() }
     }
 
-    /**
-     * Determines if a string looks like a valid score (digits, optional minus).
-     */
     private fun isScoreLike(text: String): Boolean {
         return text.matches("-?\\d+".toRegex())
     }
 
-    /**
-     * Fixes common OCR misreads (e.g., "S" -> "5", "O" -> "0").
-     */
     private fun cleanOcrText(text: String): String {
-        return text
-            .replace("S", "5", ignoreCase = true)
+        return text.replace("S", "5", ignoreCase = true)
             .replace("O", "0")
             .replace("l", "1")
             .trim()
     }
 
-    /**
-     * Converts any image to grayscale to improve Tesseract's accuracy.
-     */
     private fun toGrayscale(src: Bitmap): Bitmap {
-        val bmpGrayscale = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+        val bmpGrayscale = createBitmap(src.width, src.height)
         val canvas = Canvas(bmpGrayscale)
         val paint = Paint().apply {
             colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
@@ -231,9 +218,6 @@ class ImageRecognition(private val context: Context) {
         return bmpGrayscale
     }
 
-    /**
-     * Pads a list to exactly 18 elements (if fewer), using a fallback value.
-     */
     private fun List<Int>.padTo18(pad: Int = 0): List<Int> {
         return this.toMutableList().apply {
             while (size < 18) add(pad)

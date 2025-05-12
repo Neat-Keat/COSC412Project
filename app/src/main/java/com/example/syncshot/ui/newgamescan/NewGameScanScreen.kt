@@ -1,9 +1,10 @@
-// app/src/main/java/com/example/syncshot/ui/newgamescan/NewGameScanScreen.kt
+// Updated NewGameScanScreen.kt
 package com.example.syncshot.ui.newgamescan
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
+import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,128 +12,262 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.syncshot.ocr.TesseractHelper
+import coil.compose.rememberAsyncImagePainter
+import com.example.syncshot.ui.nav.Routes
 import com.example.syncshot.ui.newgame.NewGameViewModel
 import com.example.syncshot.ui.newgamescores.NewGameViewModelFactory
-import com.google.common.util.concurrent.ListenableFuture
+import java.io.File
 
 @Composable
 fun NewGameScanScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: NewGameViewModel = viewModel(factory = NewGameViewModelFactory(LocalContext.current))
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
-    // 1) Grab your VM via the factory so you can call onImageCaptured(...)
-    val vm: NewGameViewModel = viewModel(
-        factory = NewGameViewModelFactory(context)
+    val hasCameraPermission by viewModel.hasCameraPermission.collectAsState()
+    val scanStatus by viewModel.scanStatus.collectAsState()
+    val playerNamesState by viewModel.playerNames.collectAsState()
+    val strokesState by viewModel.strokes.collectAsState()
+    val parState by viewModel.par.collectAsState()
+    val numberOfPlayersState by viewModel.numberOfPlayers.collectAsState()
+
+    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted -> viewModel.setCameraPermissionStatus(granted) }
     )
 
-    // 2) Camera permission state
-    var hasCameraPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        )
-    }
-    val permLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted -> hasCameraPermission = granted }
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture(),
+        onResult = { success ->
+            if (success) {
+                tempPhotoUri?.let { viewModel.processSelectedImage(it) }
+            }
+        }
+    )
+
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri ->
+            uri?.let {
+                tempPhotoUri = it
+                viewModel.processSelectedImage(it)
+            }
+        }
+    )
 
     LaunchedEffect(Unit) {
-        if (!hasCameraPermission) permLauncher.launch(Manifest.permission.CAMERA)
-    }
-
-    // 3) CameraX preview setup (unchanged)
-    val cameraProviderFuture: ListenableFuture<ProcessCameraProvider> =
-        remember { ProcessCameraProvider.getInstance(context) }
-    val cameraProvider = cameraProviderFuture.get()
-    val preview = Preview.Builder().build()
-    val previewView = remember { PreviewView(context) }
-    val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-    preview.setSurfaceProvider(previewView.surfaceProvider)
-
-    // 4) Launcher to take a snapshot, hand it to VM, then navigate
-    val takePicLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicturePreview()
-    ) { bitmap: Bitmap? ->
-        bitmap?.let {
-            // Send the image to your VM — OCR + insert happens there
-            vm.onImageCaptured(it)
-            // Then move on to your standard "New Game" setup screen
-            navController.navigate("newgame")
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        } else {
+            viewModel.setCameraPermissionStatus(true)
         }
     }
 
-    // 5) UI: preview + button (all else exactly as before)
-    Scaffold { inner ->
+    Scaffold(modifier = Modifier.padding(16.dp)) { innerPadding ->
         Column(
             modifier = Modifier
-                .padding(inner)
+                .padding(innerPadding)
                 .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top
         ) {
+            Text(
+                text = "Scan Scorecard",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
             if (hasCameraPermission) {
-                Text("Camera Preview", style = MaterialTheme.typography.headlineSmall)
-                Spacer(Modifier.height(8.dp))
+                val previewView = remember { PreviewView(context) }
 
-                CameraPreview(cameraProvider, cameraSelector, preview, previewView)
+                //commented out bc it ruins legibility of lower buttons
+//                AndroidView(
+//                    factory = { previewView },
+//                    modifier = Modifier
+//                        .weight(1f)
+//                        .padding(bottom = 16.dp)
+//                )
 
-                Spacer(Modifier.height(12.dp))
-                Button(onClick = { takePicLauncher.launch(null) }) {
-                    Text("Capture & OCR")
+                LaunchedEffect(Unit) {
+                    try {
+                        val cameraProvider = ProcessCameraProvider.getInstance(context).get()
+                        val preview = Preview.Builder().build().apply {
+                            surfaceProvider = previewView.surfaceProvider
+                        }
+                        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+                        cameraProvider.unbindAll()
+                        cameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, preview)
+                    } catch (e: Exception) {
+                        Log.e("CameraPreview", "Error starting camera: ", e)
+                    }
                 }
-            } else {
-                Text(
-                    "Camera permission required",
-                    style = MaterialTheme.typography.headlineSmall
-                )
+
+                Button(
+                    onClick = {
+                        val photoUri = createTempImageUri(context)
+                        tempPhotoUri = photoUri
+                        viewModel.processSelectedImage(photoUri)
+                        takePictureLauncher.launch(photoUri)
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Take Photo")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        tempPhotoUri = null
+                        viewModel.setCameraPermissionStatus(true)
+                        pickImageLauncher.launch("image/*")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Pick from Gallery")
+                }
+
+                tempPhotoUri?.let { uri ->
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Image(
+                        painter = rememberAsyncImagePainter(uri),
+                        contentDescription = "Selected Image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(bottom = 8.dp)
+                    )
+                }
+
+                if (!scanStatus.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(scanStatus ?: "", style = MaterialTheme.typography.bodyMedium)
+                }
+
+                if (scanStatus?.contains("complete", ignoreCase = true) == true && playerNamesState.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text("Scanned Preview:", style = MaterialTheme.typography.titleMedium)
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            playerNamesState.forEachIndexed { i, name ->
+                                Text(name, style = MaterialTheme.typography.bodyLarge)
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    val playerStrokes = strokesState.getOrNull(i)
+                                    repeat(18) { holeIndex ->
+                                        val stroke = playerStrokes?.getOrNull(holeIndex) ?: -1
+                                        Text(
+                                            text = if (stroke != -1) stroke.toString() else "-",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                            }
+
+                            Text("Par:", style = MaterialTheme.typography.bodyLarge)
+                            Row(modifier = Modifier.fillMaxWidth()) {
+                                repeat(18) { holeIndex ->
+                                    val parValue = parState.getOrNull(holeIndex) ?: -1
+                                    Text(
+                                        text = if (parValue != -1) parValue.toString() else "-",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Button(
+                                onClick = {
+                                    navController.navigate(
+                                        Routes.newGameScoresRoute(
+                                            numberOfPlayersState,
+                                            viewModel.gameDate.toString(),
+                                            viewModel.gameLocation.toString()
+                                        )
+                                    )
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Edit Scores")
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Button(
+                                onClick = {
+                                    viewModel.insertGame()
+                                    navController.navigate(Routes.GameList) {
+                                        popUpTo(Routes.GameList) { inclusive = true }
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Save Now")
+                            }
+                        }
+                    }
+                } else if (scanStatus?.contains("complete", ignoreCase = true) == true && playerNamesState.isEmpty()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Scan complete, but no players found.", style = MaterialTheme.typography.bodyMedium)
+                }
             }
         }
     }
 }
 
-@Composable
-private fun CameraPreview(
-    cameraProvider: ProcessCameraProvider,
-    cameraSelector: CameraSelector,
-    preview: Preview,
-    previewView: PreviewView
-) {
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    LaunchedEffect(cameraProvider, lifecycleOwner) {
-        try {
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                lifecycleOwner,
-                cameraSelector,
-                preview
-            )
-        } catch (e: Exception) {
-            Log.e("CameraPreview", "Failed to bind camera", e)
-        }
+private fun createTempImageUri(context: Context): Uri {
+    val tempFile = File.createTempFile(
+        "temp_image_${System.currentTimeMillis()}",
+        ".jpg",
+        context.cacheDir
+    ).apply {
+        createNewFile()
+        deleteOnExit()
     }
 
-    AndroidView(
-        factory = { previewView },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
+    return FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        tempFile
     )
 }
