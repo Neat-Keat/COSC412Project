@@ -4,8 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.util.Log
+
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.syncshot.ocr.ImageRecognition
 import com.example.syncshot.data.model.Game
@@ -28,9 +28,6 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
     private val ocrImageRecognition = ImageRecognition(context)
     private val ocrTesseractHelper = TesseractHelper
 
-class NewGameViewModel(private val context: Context) : ViewModel() {
-
-    private val ocrProcessor = ImageRecognition(context)
     private val repository = GameRepository(context)
 
     private val _hasCameraPermission = MutableStateFlow(false)
@@ -44,8 +41,8 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
 
     private val _strokes = MutableStateFlow<Array<IntArray>>(emptyArray())
     val strokes: StateFlow<Array<IntArray>> = _strokes.asStateFlow()
-    
-    private val _par = MutableStateFlow<IntArray>(IntArray(18) { 4 }) // assume all holes have default par 4
+
+    private val _par = MutableStateFlow<IntArray>(IntArray(18) { 4 }) // assume par = 4 for all holes
     val par: StateFlow<IntArray> = _par.asStateFlow()
 
     private val _numberOfPlayers = MutableStateFlow(0)
@@ -64,11 +61,10 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
 
     fun updateNumberOfPlayers(count: Int) {
         _numberOfPlayers.value = count
-
         // Reset other state when player count changes
         _playerNames.value = Array(count) { "Player ${it + 1}" }
         _strokes.value = Array(count) { IntArray(18) }
-        _par.value = IntArray(18) { -1 } // Reset par as well
+        _par.value = IntArray(18) { 4 } // Reset par as well
     }
 
     fun updateGameDate(date: String?) {
@@ -79,14 +75,13 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
         _gameLocation.value = location
     }
 
-    //unused
-//    fun updatePlayerName(index: Int, name: String) {
-//        val updated = _playerNames.value.copyOf()
-//        if (index in updated.indices) {
-//            updated[index] = name
-//            _playerNames.value = updated
-//        }
-//    }
+    fun updatePlayerName(index: Int, name: String) {
+        val updated = _playerNames.value.copyOf()
+        if (index in updated.indices) {
+            updated[index] = name
+            _playerNames.value = updated
+        }
+    }
 
     fun updateStrokes(playerIndex: Int, holeIndex: Int, value: Int) {
         val updated = _strokes.value.map { it.copyOf() }.toTypedArray()
@@ -117,6 +112,7 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
                 _scanStatus.value = "Invalid game data. Please add players and scores before saving."
                 return@launch
             }
+
 
             val newGame = Game(
                 id = UUID.randomUUID().toString(),
@@ -252,7 +248,7 @@ class NewGameViewModel(private val context: Context) : ViewModel() {
     private fun resetGameState() {
         _playerNames.value = emptyArray()
         _strokes.value = emptyArray()
-        _par.value = IntArray(18) { -1 }
+        _par.value = IntArray(18) { 4 }
         _numberOfPlayers.value = 0
         _gameDate.value = null
         _gameLocation.value = null
