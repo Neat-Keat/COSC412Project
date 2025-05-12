@@ -13,22 +13,38 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.syncshot.ui.nav.Routes
 import com.example.syncshot.ui.newgame.NewGameViewModel
 import com.example.syncshot.ui.newgamescores.NewGameViewModelFactory
-import com.example.syncshot.ui.nav.Routes
 import java.io.File
 
 @Composable
@@ -37,7 +53,7 @@ fun NewGameScanScreen(
     viewModel: NewGameViewModel = viewModel(factory = NewGameViewModelFactory(LocalContext.current))
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
 
     val hasCameraPermission by viewModel.hasCameraPermission.collectAsState()
     val scanStatus by viewModel.scanStatus.collectAsState()
@@ -47,7 +63,6 @@ fun NewGameScanScreen(
     val numberOfPlayersState by viewModel.numberOfPlayers.collectAsState()
 
     var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
-
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted -> viewModel.setCameraPermissionStatus(granted) }
@@ -107,7 +122,7 @@ fun NewGameScanScreen(
                     try {
                         val cameraProvider = ProcessCameraProvider.getInstance(context).get()
                         val preview = Preview.Builder().build().apply {
-                            setSurfaceProvider(previewView.surfaceProvider)
+                            surfaceProvider = previewView.surfaceProvider
                         }
                         val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                         cameraProvider.unbindAll()
@@ -128,7 +143,7 @@ fun NewGameScanScreen(
                 ) {
                     Text("Take Photo")
                 }
-
+                
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
@@ -186,7 +201,6 @@ fun NewGameScanScreen(
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
-
                             Text("Par:", style = MaterialTheme.typography.bodyLarge)
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 repeat(18) { holeIndex ->
@@ -206,8 +220,8 @@ fun NewGameScanScreen(
                                     navController.navigate(
                                         Routes.newGameScoresRoute(
                                             numberOfPlayersState,
-                                            viewModel.gameDate ?: "",
-                                            viewModel.gameLocation ?: ""
+                                            viewModel.gameDate.toString(),
+                                            viewModel.gameLocation.toString()
                                         )
                                     )
                                 },

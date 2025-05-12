@@ -9,6 +9,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.regex.Pattern
 import kotlin.math.abs
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.scale
 
 // Data classes
 
@@ -133,7 +135,7 @@ class ImageRecognition(private val context: Context) {
         return if (bitmap.width > maxWidth) {
             val ratio = bitmap.height.toFloat() / bitmap.width
             val targetHeight = (maxWidth * ratio).toInt()
-            Bitmap.createScaledBitmap(bitmap, maxWidth, targetHeight, true)
+            bitmap.scale(maxWidth, targetHeight)
         } else {
             bitmap
         }
@@ -207,7 +209,7 @@ class ImageRecognition(private val context: Context) {
     }
 
     private fun toGrayscale(src: Bitmap): Bitmap {
-        val bmpGrayscale = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+        val bmpGrayscale = createBitmap(src.width, src.height)
         val canvas = Canvas(bmpGrayscale)
         val paint = Paint().apply {
             colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
